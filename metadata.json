@@ -1,0 +1,8 @@
+{
+	"uuid": "focus@scaryrawr.github.io",
+	"name": "Focus",
+	"description": "Transparent inactive windows",
+	"version": 1,
+	"shell-version": ["3.38"],
+	"url": "https://github.com/scaryrawr/gnome-focus"
+}
