@@ -17,7 +17,7 @@ function init() {
 function focus(win)
 {
 	for (const actor of global.get_window_actors()) {
-		actor.set_opacity((actor.get_meta_window() === win) ? FOCUS_OPACITY : INACTIVE_OPACITY);
+		actor.get_children()[0].set_opacity((actor.get_meta_window() === win) ? FOCUS_OPACITY : INACTIVE_OPACITY);
 	}
 }
 
@@ -35,7 +35,7 @@ function enable() {
 		}
 
 		if (win !== global.display.focus_window) {
-			actor.set_opacity(INACTIVE_OPACITY);
+			actor.get_children()[0].set_opacity(INACTIVE_OPACITY);
 		}
 	}
 }
@@ -55,6 +55,6 @@ function disable() {
 			delete win._gnome_focus_signal;
 		}
 
-		actor.set_opacity(FOCUS_OPACITY);
+		actor.get_children()[0].set_opacity(FOCUS_OPACITY);
 	}
 }
