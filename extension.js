@@ -14,10 +14,24 @@ let create_signal = undefined;
 function init() {
 }
 
+function set_opacity(actor, value)
+{
+	for (const child of actor.get_children())
+	{
+		if (child.set_opacity) {
+			child.set_opacity(value);
+		}
+	}
+
+	if (actor.set_opacity) {
+		actor.set_opacity(value);
+	}
+}
+
 function focus(win)
 {
 	for (const actor of global.get_window_actors()) {
-		actor.get_children()[0].set_opacity((actor.get_meta_window() === win) ? FOCUS_OPACITY : INACTIVE_OPACITY);
+		set_opacity(actor, (actor.get_meta_window() === win) ? FOCUS_OPACITY : INACTIVE_OPACITY);
 	}
 }
 
@@ -35,7 +49,7 @@ function enable() {
 		}
 
 		if (win !== global.display.focus_window) {
-			actor.get_children()[0].set_opacity(INACTIVE_OPACITY);
+			set_opacity(actor, INACTIVE_OPACITY);
 		}
 	}
 }
@@ -55,6 +69,6 @@ function disable() {
 			delete win._gnome_focus_signal;
 		}
 
-		actor.get_children()[0].set_opacity(FOCUS_OPACITY);
+		set_opacity(actor, FOCUS_OPACITY);
 	}
 }
