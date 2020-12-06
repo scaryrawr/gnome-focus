@@ -18,10 +18,14 @@ function set_opacity(actor, value)
 {
 	for (const child of actor.get_children())
 	{
-		child.set_opacity(value);
+		if (child.set_opacity) {
+			child.set_opacity(value);
+		}
 	}
 
-	actor.set_opacity(value);
+	if (actor.set_opacity) {
+		actor.set_opacity(value);
+	}
 }
 
 function focus(win)
