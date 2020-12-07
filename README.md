@@ -16,8 +16,8 @@ It uses the WM_CLASS (use `xprop` to help figure them out).
 
 ```json
 [
-    'Code',
-    'Code - Insiders'
+    "Code",
+    "Code - Insiders"
 ]
 ```
 
