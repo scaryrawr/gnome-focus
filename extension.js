@@ -2,20 +2,24 @@
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
+const Settings = Me.imports.settings;
 
-// Roughly 80%
-const INACTIVE_OPACITY = 200;
+const Gio = imports.gi.Gio;
+const GLib = imports.gi.GLib;
+const Gtk = imports.gi.Gtk;
 
 // 100%
-const FOCUS_OPACITY = 255;
+const DEFAULT_OPACITY = 255;
 
 let create_signal = undefined;
+let settings;
+let special;
 
 function init() {
+	settings = Settings.get_settings();
 }
 
-function set_opacity(actor, value)
-{
+function set_opacity(actor, value) {
 	for (const child of actor.get_children())
 	{
 		if (child.set_opacity) {
@@ -28,10 +32,20 @@ function set_opacity(actor, value)
 	}
 }
 
-function focus(win)
-{
+function translate_opacity(percentage) {
+	return DEFAULT_OPACITY * percentage / 100;
+}
+
+function focus(win) {
+	const focus_opacity = translate_opacity(settings.focus_opacity)
+	const inactive_opacity = translate_opacity(settings.inactive_opacity);
+	const special_opacity = translate_opacity(settings.special_focus_opacity);
+
 	for (const actor of global.get_window_actors()) {
-		set_opacity(actor, (actor.get_meta_window() === win) ? FOCUS_OPACITY : INACTIVE_OPACITY);
+		const meta_win = actor.get_meta_window();
+		set_opacity(actor, (meta_win === win || meta_win.is_fullscreen()) ?
+			(special && special.includes(meta_win.get_wm_class())) ? special_opacity : focus_opacity
+			: inactive_opacity);
 	}
 }
 
@@ -42,6 +56,21 @@ function enable() {
 		win._gnome_focus_signal = win.connect('focus', focus);
 	});
 
+	const special_file = GLib.build_filenamev([GLib.get_user_config_dir(), Me.metadata.name, 'special_focus.json']);
+	try {
+		const load_config = GLib.file_get_contents(special_file);
+		if (load_config[0]) {
+			special = JSON.parse(load_config[1]);
+			for (const spec of special) {
+				log(`special opacity for ${spec}`);
+			}
+		}
+	} catch (error) {
+		log(`${Me.metadata.name}: ${error}`);
+	}
+
+	const inactive_opacity = translate_opacity(settings.inactive_opacity);
+
 	for (const actor of global.get_window_actors()) {
 		const win = actor.get_meta_window();
 		if (!win._gnome_focus_signal) {
@@ -49,7 +78,7 @@ function enable() {
 		}
 
 		if (win !== global.display.focus_window) {
-			set_opacity(actor, INACTIVE_OPACITY);
+			set_opacity(actor, inactive_opacity);
 		}
 	}
 }
@@ -69,6 +98,6 @@ function disable() {
 			delete win._gnome_focus_signal;
 		}
 
-		set_opacity(actor, FOCUS_OPACITY);
+		set_opacity(actor, DEFAULT_OPACITY);
 	}
 }

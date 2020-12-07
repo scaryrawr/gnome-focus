@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+	<schema id="org.gnome.shell.extensions.focus" path="/org/gnome/shell/extensions/focus/">
+		<key name="inactive-opacity" type="u">
+			<default>80</default>
+			<summary>Opacity of inactive windows 0-100</summary>
+		</key>
+		<key name="special-focus-opacity" type="u">
+			<default>95</default>
+			<summary>Opacity of focused window if in special focus list 0-100</summary>
+		</key>
+		<key name="focus-opacity" type="u">
+			<default>100</default>
+			<summary>Opacity of focused window 0-100</summary>
+		</key>
+	</schema>
+</schemalist>
