@@ -12,11 +12,10 @@ const Gtk = imports.gi.Gtk;
 const DEFAULT_OPACITY = 255;
 
 let create_signal = undefined;
-let settings;
-let special;
+let settings = undefined;
+let special = undefined;
 
 function init() {
-	settings = Settings.get_settings();
 }
 
 function set_opacity(actor, value) {
@@ -37,6 +36,10 @@ function translate_opacity(percentage) {
 }
 
 function focus(win) {
+	if (!settings) {
+		return;
+	}
+
 	const focus_opacity = translate_opacity(settings.focus_opacity)
 	const inactive_opacity = translate_opacity(settings.inactive_opacity);
 	const special_opacity = translate_opacity(settings.special_focus_opacity);
@@ -51,6 +54,8 @@ function focus(win) {
 
 function enable() {
 	log(`enabling ${Me.metadata.name} version ${Me.metadata.version}`);
+
+	settings = Settings.get_settings();
 
 	create_signal = global.display.connect('window-created', function(_, win) {
 		win._gnome_focus_signal = win.connect('focus', focus);
@@ -100,4 +105,7 @@ function disable() {
 
 		set_opacity(actor, DEFAULT_OPACITY);
 	}
+
+	special = undefined;
+	settings = undefined;
 }
