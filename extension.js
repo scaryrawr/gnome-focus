@@ -47,7 +47,7 @@ function focus(win) {
 	for (const actor of global.get_window_actors()) {
 		const meta_win = actor.get_meta_window();
 		const wm_class = meta_win.get_wm_class();
-		if (wm_class == 'Gnome-shell') {
+		if (wm_class === 'Gnome-shell') {
 			continue;
 		}
 
