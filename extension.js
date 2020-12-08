@@ -46,8 +46,13 @@ function focus(win) {
 
 	for (const actor of global.get_window_actors()) {
 		const meta_win = actor.get_meta_window();
+		const wm_class = meta_win.get_wm_class();
+		if (wm_class == 'Gnome-shell') {
+			continue;
+		}
+
 		set_opacity(actor, (meta_win === win || meta_win.is_fullscreen()) ?
-			(special && special.includes(meta_win.get_wm_class())) ? special_opacity : focus_opacity
+			(special && special.includes(wm_class)) ? special_opacity : focus_opacity
 			: inactive_opacity);
 	}
 }
