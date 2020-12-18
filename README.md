@@ -39,6 +39,4 @@ It uses the WM_CLASS (use `xprop` to help figure them out). The below example le
 
 ## Installing
 
-Clone into your extensions folder:
-
-`git clone https://github.com/scaryrawr/gnome-focus ~/.local/share/gnome-shell/extensions/focus@scaryrawr.github.io`
+[GNOME Extensions - Focus](https://extensions.gnome.org/extension/3924/focus/)
