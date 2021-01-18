@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
@@ -20,7 +20,7 @@ function buildPrefsWidget() {
   });
 
   const title = new Gtk.Label({
-    label: "<b>" + Me.metadata.name + " Extension Preferences</b>",
+    label: '<b>' + Me.metadata.name + ' Extension Preferences</b>',
     halign: Gtk.Align.START,
     use_markup: true,
     visible: true,
@@ -29,7 +29,7 @@ function buildPrefsWidget() {
   widget.attach(title, 0, 0, 2, 1);
 
   const focus_opacity_label = new Gtk.Label({
-    label: "Focus Opacity",
+    label: 'Focus Opacity',
     halign: Gtk.Align.START,
     visible: true,
   });
@@ -40,7 +40,7 @@ function buildPrefsWidget() {
   });
 
   focus_opacity_entry.set_text(settings.focus_opacity.toString());
-  focus_opacity_entry.connect("changed", function () {
+  focus_opacity_entry.connect('changed', function () {
     const value = parseInt(focus_opacity_entry.text);
     if (!isNaN(value) && value <= 100 && value >= 0) {
       settings.set_focus_opacity(value);
@@ -52,7 +52,7 @@ function buildPrefsWidget() {
   widget.attach(focus_opacity_entry, 1, 1, 1, 1);
 
   const inactive_opacity_label = new Gtk.Label({
-    label: "Inactive Opacity",
+    label: 'Inactive Opacity',
     halign: Gtk.Align.START,
     visible: true,
   });
@@ -63,7 +63,7 @@ function buildPrefsWidget() {
   });
 
   inactive_opacity_entry.set_text(settings.inactive_opacity.toString());
-  inactive_opacity_entry.connect("changed", function () {
+  inactive_opacity_entry.connect('changed', function () {
     const value = parseInt(inactive_opacity_entry.text);
     if (!isNaN(value) && value <= 100 && value >= 0) {
       settings.set_inactive_opacity(value);
@@ -75,7 +75,7 @@ function buildPrefsWidget() {
   widget.attach(inactive_opacity_entry, 1, 2, 1, 1);
 
   const special_focus_opacity_label = new Gtk.Label({
-    label: "Special Focus Opacity",
+    label: 'Special Focus Opacity',
     halign: Gtk.Align.START,
     visible: true,
   });
@@ -85,10 +85,8 @@ function buildPrefsWidget() {
     visible: true,
   });
 
-  special_focus_opacity_entry.set_text(
-    settings.special_focus_opacity.toString()
-  );
-  special_focus_opacity_entry.connect("changed", function () {
+  special_focus_opacity_entry.set_text(settings.special_focus_opacity.toString());
+  special_focus_opacity_entry.connect('changed', function () {
     const value = parseInt(special_focus_opacity_entry.text);
     if (!isNaN(value) && value <= 100 && value >= 0) {
       settings.set_special_focus_opacity(value);
