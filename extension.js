@@ -84,6 +84,20 @@ function enable() {
 
   create_signal = global.display.connect('window-created', function (_, win) {
     win._focus_extension_signal = win.connect('focus', focus_changed);
+
+    // In Wayland, when we have a new window, we need ot have a slight delay before
+    // attempting to set the transparency.
+    GLib.timeout_add(GLib.PRIORITY_DEFAULT, 250, function () {
+      // We could have something go wrong, but always want to set false,
+      // otherwise we end up being called more than once
+      try {
+        focus_changed();
+      } catch (err) {
+        log(`Error on new window: ${err}`);
+      }
+
+      return false;
+    });
   });
 
   const special_file = GLib.build_filenamev([GLib.get_user_config_dir(), Me.metadata.name, 'special_focus.json']);
