@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
@@ -24,7 +24,7 @@ let special_focus_list = undefined;
 let ignore_focus_list = undefined;
 
 //! List of WM_CLASSes that shouldn't be messed with that may lead to undesirable UI experiences
-const DO_NOT_TOUCH_LIST = ["Gnome-shell"];
+const DO_NOT_TOUCH_LIST = ['Gnome-shell'];
 
 function init() {}
 
@@ -32,8 +32,7 @@ function set_opacity(win, actor, value) {
   if (
     DO_NOT_TOUCH_LIST.includes(win.get_wm_class()) ||
     (ignore_focus_list &&
-      (ignore_focus_list.includes(win.get_wm_class()) ||
-        ignore_focus_list.includes(win.get_wm_class_instance())))
+      (ignore_focus_list.includes(win.get_wm_class()) || ignore_focus_list.includes(win.get_wm_class_instance())))
   ) {
     return;
   }
@@ -69,8 +68,7 @@ function focus_changed() {
       meta_win,
       actor,
       meta_win.has_focus() || meta_win.is_fullscreen()
-        ? (special_focus_list &&
-            special_focus_list.includes(meta_win.get_wm_class())) ||
+        ? (special_focus_list && special_focus_list.includes(meta_win.get_wm_class())) ||
           special_focus_list.includes(meta_win.get_wm_class_instance())
           ? special_opacity
           : focus_opacity
@@ -84,15 +82,11 @@ function enable() {
 
   settings = Settings.get_settings();
 
-  create_signal = global.display.connect("window-created", function (_, win) {
-    win._focus_extension_signal = win.connect("focus", focus_changed);
+  create_signal = global.display.connect('window-created', function (_, win) {
+    win._focus_extension_signal = win.connect('focus', focus_changed);
   });
 
-  const special_file = GLib.build_filenamev([
-    GLib.get_user_config_dir(),
-    Me.metadata.name,
-    "special_focus.json",
-  ]);
+  const special_file = GLib.build_filenamev([GLib.get_user_config_dir(), Me.metadata.name, 'special_focus.json']);
   try {
     const special_focus_load = GLib.file_get_contents(special_file);
     if (special_focus_load[0]) {
@@ -102,11 +96,7 @@ function enable() {
     log(`${Me.metadata.name}: failed to load special focus file ${error}`);
   }
 
-  const ignore_file = GLib.build_filenamev([
-    GLib.get_user_config_dir(),
-    Me.metadata.name,
-    "ignore_focus.json",
-  ]);
+  const ignore_file = GLib.build_filenamev([GLib.get_user_config_dir(), Me.metadata.name, 'ignore_focus.json']);
   try {
     const ignore_focus_load = GLib.file_get_contents(ignore_file);
     if (ignore_focus_load[0]) {
@@ -121,7 +111,7 @@ function enable() {
   for (const actor of global.get_window_actors()) {
     const win = actor.get_meta_window();
     if (!win._focus_extension_signal) {
-      win._focus_extension_signal = win.connect("focus", focus_changed);
+      win._focus_extension_signal = win.connect('focus', focus_changed);
     }
 
     if (!win.has_focus()) {
