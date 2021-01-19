@@ -7,6 +7,7 @@ const Settings = Me.imports.settings;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const Gtk = imports.gi.Gtk;
+const Meta = imports.gi.Meta;
 
 //! 100% opacity
 const DEFAULT_OPACITY = 255;
@@ -23,16 +24,18 @@ let special_focus_list = undefined;
 //! List of WM_CLASSes that should not have opacity modified
 let ignore_focus_list = undefined;
 
-//! List of WM_CLASSes that shouldn't be messed with that may lead to undesirable UI experiences
-const DO_NOT_TOUCH_LIST = ['Gnome-shell'];
-
 function init() {}
 
 function set_opacity(win, actor, value) {
+  if (win.window_type !== Meta.WindowType.NORMAL) {
+    return;
+  }
+
   if (
-    DO_NOT_TOUCH_LIST.includes(win.get_wm_class()) ||
-    (ignore_focus_list &&
-      (ignore_focus_list.includes(win.get_wm_class()) || ignore_focus_list.includes(win.get_wm_class_instance())))
+    ignore_focus_list &&
+    (ignore_focus_list.includes(win.get_wm_class()) ||
+      ignore_focus_list.includes(win.get_wm_class_instance()) ||
+      ignore_focus_list.includes(win.get_title()))
   ) {
     return;
   }
@@ -63,7 +66,6 @@ function focus_changed() {
 
   for (const actor of global.get_window_actors()) {
     const meta_win = actor.get_meta_window();
-
     set_opacity(
       meta_win,
       actor,
@@ -83,21 +85,23 @@ function enable() {
   settings = Settings.get_settings();
 
   create_signal = global.display.connect('window-created', function (_, win) {
-    win._focus_extension_signal = win.connect('focus', focus_changed);
+    if (win.window_type === Meta.WindowType.NORMAL) {
+      win._focus_extension_signal = win.connect('focus', focus_changed);
 
-    // In Wayland, when we have a new window, we need ot have a slight delay before
-    // attempting to set the transparency.
-    GLib.timeout_add(GLib.PRIORITY_DEFAULT, 250, function () {
-      // We could have something go wrong, but always want to set false,
-      // otherwise we end up being called more than once
-      try {
-        focus_changed();
-      } catch (err) {
-        log(`Error on new window: ${err}`);
-      }
+      // In Wayland, when we have a new window, we need ot have a slight delay before
+      // attempting to set the transparency.
+      GLib.timeout_add(GLib.PRIORITY_DEFAULT, 250, function () {
+        // We could have something go wrong, but always want to set false,
+        // otherwise we end up being called more than once
+        try {
+          focus_changed();
+        } catch (err) {
+          log(`Error on new window: ${err}`);
+        }
 
-      return false;
-    });
+        return false;
+      });
+    }
   });
 
   const special_file = GLib.build_filenamev([GLib.get_user_config_dir(), Me.metadata.name, 'special_focus.json']);
@@ -124,6 +128,10 @@ function enable() {
 
   for (const actor of global.get_window_actors()) {
     const win = actor.get_meta_window();
+    if (win.window_type !== Meta.WindowType.NORMAL) {
+      continue;
+    }
+
     if (!win._focus_extension_signal) {
       win._focus_extension_signal = win.connect('focus', focus_changed);
     }
