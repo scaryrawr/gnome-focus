@@ -24,10 +24,12 @@ let special_focus_list = undefined;
 //! List of WM_CLASSes that should not have opacity modified
 let ignore_focus_list = undefined;
 
+const WINDOW_TYPES = [Meta.WindowType.NORMAL];
+
 function init() {}
 
 function set_opacity(win, actor, value) {
-  if (win.window_type !== Meta.WindowType.NORMAL) {
+  if (!WINDOW_TYPES.includes(win.window_type)) {
     return;
   }
 
@@ -85,23 +87,25 @@ function enable() {
   settings = Settings.get_settings();
 
   create_signal = global.display.connect('window-created', function (_, win) {
-    if (win.window_type === Meta.WindowType.NORMAL) {
-      win._focus_extension_signal = win.connect('focus', focus_changed);
-
-      // In Wayland, when we have a new window, we need ot have a slight delay before
-      // attempting to set the transparency.
-      GLib.timeout_add(GLib.PRIORITY_DEFAULT, 250, function () {
-        // We could have something go wrong, but always want to set false,
-        // otherwise we end up being called more than once
-        try {
-          focus_changed();
-        } catch (err) {
-          log(`Error on new window: ${err}`);
-        }
-
-        return false;
-      });
+    if (!WINDOW_TYPES.includes(win.window_type)) {
+      return;
     }
+
+    win._focus_extension_signal = win.connect('focus', focus_changed);
+
+    // In Wayland, when we have a new window, we need ot have a slight delay before
+    // attempting to set the transparency.
+    GLib.timeout_add(GLib.PRIORITY_DEFAULT, 250, function () {
+      // We could have something go wrong, but always want to set false,
+      // otherwise we end up being called more than once
+      try {
+        focus_changed();
+      } catch (err) {
+        log(`Error on new window: ${err}`);
+      }
+
+      return false;
+    });
   });
 
   const special_file = GLib.build_filenamev([GLib.get_user_config_dir(), Me.metadata.name, 'special_focus.json']);
@@ -128,7 +132,7 @@ function enable() {
 
   for (const actor of global.get_window_actors()) {
     const win = actor.get_meta_window();
-    if (win.window_type !== Meta.WindowType.NORMAL) {
+    if (!WINDOW_TYPES.includes(win.window_type)) {
       continue;
     }
 
