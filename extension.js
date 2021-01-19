@@ -9,21 +9,22 @@ const GLib = imports.gi.GLib;
 const Gtk = imports.gi.Gtk;
 const Meta = imports.gi.Meta;
 
-//! 100% opacity
+/** 100% opacity value */
 const DEFAULT_OPACITY = 255;
 
-//! Signal marker for when a new window is created
+/** Signal marker for when a new window is created */
 let create_signal = undefined;
 
-//! Settings Object for getting opacity values
+/** Settings Object for getting opacity values */
 let settings = undefined;
 
-//! List of WM_CLASSes that should have **some** opacity even when focused
+/** List of WM_CLASSes that should have **some** opacity even when focused */
 let special_focus_list = undefined;
 
-//! List of WM_CLASSes that should not have opacity modified
+/** List of WM_CLASSes that should not have opacity modified */
 let ignore_focus_list = undefined;
 
+/** Window Types that should be considered for focus changes */
 const WINDOW_TYPES = [Meta.WindowType.NORMAL];
 
 function init() {}
@@ -53,10 +54,17 @@ function set_opacity(win, actor, value) {
   }
 }
 
+/**
+ * Converts the opacity percentage to value out of 255.
+ * @param {number} percentage 0 - 100
+ */
 function translate_opacity(percentage) {
   return (DEFAULT_OPACITY * percentage) / 100;
 }
 
+/**
+ * Updates opacity of windows after a focus change
+ */
 function focus_changed() {
   if (!settings) {
     return;
