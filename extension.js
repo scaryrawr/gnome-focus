@@ -4,6 +4,7 @@ const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const Settings = Me.imports.settings;
 
+const Clutter = imports.gi.Clutter;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const Gtk = imports.gi.Gtk;
@@ -27,9 +28,12 @@ let ignore_focus_list = undefined;
 /** Window Types that should be considered for focus changes */
 const WINDOW_TYPES = [Meta.WindowType.NORMAL];
 
+/** Name of the blur effect being applied by Focus extension */
+const BLUR_EFFECT_NAME = 'focus-extension-blur';
+
 function init() {}
 
-function set_opacity(win, actor, value) {
+function set_opacity(win, actor, value, blur) {
   if (!WINDOW_TYPES.includes(win.window_type)) {
     return;
   }
@@ -46,6 +50,11 @@ function set_opacity(win, actor, value) {
   for (const child of actor.get_children()) {
     if (child.set_opacity) {
       child.set_opacity(value);
+      if (blur === true && actor.get_effect(BLUR_EFFECT_NAME) === null) {
+        actor.add_effect_with_name(BLUR_EFFECT_NAME, new Clutter.BlurEffect());
+      } else if (blur !== true) {
+        actor.remove_effect_by_name(BLUR_EFFECT_NAME);
+      }
     }
   }
 
@@ -76,15 +85,17 @@ function focus_changed() {
 
   for (const actor of global.get_window_actors()) {
     const meta_win = actor.get_meta_window();
+    const is_focused = meta_win.has_focus() || meta_win.is_fullscreen();
     set_opacity(
       meta_win,
       actor,
-      meta_win.has_focus() || meta_win.is_fullscreen()
+      is_focused
         ? (special_focus_list && special_focus_list.includes(meta_win.get_wm_class())) ||
           special_focus_list.includes(meta_win.get_wm_class_instance())
           ? special_opacity
           : focus_opacity
-        : inactive_opacity
+        : inactive_opacity,
+      !is_focused
     );
   }
 }
