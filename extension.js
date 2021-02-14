@@ -80,8 +80,8 @@ function focus_changed() {
       meta_win,
       actor,
       meta_win.has_focus() || meta_win.is_fullscreen()
-        ? (special_focus_list && special_focus_list.includes(meta_win.get_wm_class())) ||
-          special_focus_list.includes(meta_win.get_wm_class_instance())
+        ? (special_focus_list && (special_focus_list.includes(meta_win.get_wm_class()) ||
+          special_focus_list.includes(meta_win.get_wm_class_instance())))
           ? special_opacity
           : focus_opacity
         : inactive_opacity
