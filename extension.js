@@ -7,32 +7,38 @@ const Settings = Me.imports.settings;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const Gtk = imports.gi.Gtk;
+const Meta = imports.gi.Meta;
 
-//! 100% opacity
+/** 100% opacity value */
 const DEFAULT_OPACITY = 255;
 
-//! Signal marker for when a new window is created
+/** Signal marker for when a new window is created */
 let create_signal = undefined;
 
-//! Settings Object for getting opacity values
+/** Settings Object for getting opacity values */
 let settings = undefined;
 
-//! List of WM_CLASSes that should have **some** opacity even when focused
+/** List of WM_CLASSes that should have **some** opacity even when focused */
 let special_focus_list = undefined;
 
-//! List of WM_CLASSes that should not have opacity modified
+/** List of WM_CLASSes that should not have opacity modified */
 let ignore_focus_list = undefined;
 
-//! List of WM_CLASSes that shouldn't be messed with that may lead to undesirable UI experiences
-const DO_NOT_TOUCH_LIST = ['Gnome-shell'];
+/** Window Types that should be considered for focus changes */
+const WINDOW_TYPES = [Meta.WindowType.NORMAL];
 
 function init() {}
 
 function set_opacity(win, actor, value) {
+  if (!WINDOW_TYPES.includes(win.window_type)) {
+    return;
+  }
+
   if (
-    DO_NOT_TOUCH_LIST.includes(win.get_wm_class()) ||
-    (ignore_focus_list &&
-      (ignore_focus_list.includes(win.get_wm_class()) || ignore_focus_list.includes(win.get_wm_class_instance())))
+    ignore_focus_list &&
+    (ignore_focus_list.includes(win.get_wm_class()) ||
+      ignore_focus_list.includes(win.get_wm_class_instance()) ||
+      ignore_focus_list.includes(win.get_title()))
   ) {
     return;
   }
@@ -48,10 +54,17 @@ function set_opacity(win, actor, value) {
   }
 }
 
+/**
+ * Converts the opacity percentage to value out of 255.
+ * @param {number} percentage 0 - 100
+ */
 function translate_opacity(percentage) {
   return (DEFAULT_OPACITY * percentage) / 100;
 }
 
+/**
+ * Updates opacity of windows after a focus change
+ */
 function focus_changed() {
   if (!settings) {
     return;
@@ -63,13 +76,12 @@ function focus_changed() {
 
   for (const actor of global.get_window_actors()) {
     const meta_win = actor.get_meta_window();
-
     set_opacity(
       meta_win,
       actor,
       meta_win.has_focus() || meta_win.is_fullscreen()
-        ? (special_focus_list && special_focus_list.includes(meta_win.get_wm_class())) ||
-          special_focus_list.includes(meta_win.get_wm_class_instance())
+        ? (special_focus_list && (special_focus_list.includes(meta_win.get_wm_class()) ||
+          special_focus_list.includes(meta_win.get_wm_class_instance())))
           ? special_opacity
           : focus_opacity
         : inactive_opacity
@@ -83,6 +95,10 @@ function enable() {
   settings = Settings.get_settings();
 
   create_signal = global.display.connect('window-created', function (_, win) {
+    if (!WINDOW_TYPES.includes(win.window_type)) {
+      return;
+    }
+
     win._focus_extension_signal = win.connect('focus', focus_changed);
 
     // In Wayland, when we have a new window, we need ot have a slight delay before
@@ -124,6 +140,10 @@ function enable() {
 
   for (const actor of global.get_window_actors()) {
     const win = actor.get_meta_window();
+    if (!WINDOW_TYPES.includes(win.window_type)) {
+      continue;
+    }
+
     if (!win._focus_extension_signal) {
       win._focus_extension_signal = win.connect('focus', focus_changed);
     }
