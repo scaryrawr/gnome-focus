@@ -8,6 +8,7 @@ const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const Gtk = imports.gi.Gtk;
 const Meta = imports.gi.Meta;
+const ByteArray = imports.byteArray;
 
 /** 100% opacity value */
 const DEFAULT_OPACITY = 255;
@@ -120,7 +121,7 @@ function enable() {
   try {
     const special_focus_load = GLib.file_get_contents(special_file);
     if (special_focus_load[0]) {
-      special_focus_list = JSON.parse(special_focus_load[1]);
+      special_focus_list = JSON.parse(ByteArray.toString(special_focus_load[1]));
     }
   } catch (error) {
     log(`${Me.metadata.name}: failed to load special focus file ${error}`);
@@ -130,7 +131,7 @@ function enable() {
   try {
     const ignore_focus_load = GLib.file_get_contents(ignore_file);
     if (ignore_focus_load[0]) {
-      ignore_focus_list = JSON.parse(ignore_focus_load[1]);
+      ignore_focus_list = JSON.parse(ByteArray.toString(ignore_focus_load[1]));
     }
   } catch (error) {
     log(`${Me.metadata.name}: Failed to load ignore file ${error}`);
