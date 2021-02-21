@@ -4,6 +4,7 @@
   "description": "Make inactive windows transparent",
   "scripts": {
     "bb": "beachball change",
+	"bb:bump": "beachball bump",
     "bb:check": "beachball check",
     "types:clean": "[ -d ./@types] && rm -r ./types",
     "build:meta": "node generate-metadata.js",
