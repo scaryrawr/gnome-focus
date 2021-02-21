@@ -1,0 +1,7 @@
+target/
+dist/
+gir/
+node_modules/
+.rollup.cache/
+.vscode/
+*.zip

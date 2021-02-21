@@ -1,0 +1,20 @@
+{
+  "name": "focus",
+  "entries": [
+    {
+      "date": "Sun, 21 Feb 2021 23:49:18 GMT",
+      "tag": "focus_v1.4.0",
+      "version": "1.4.0",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Convert to TypeScript",
+            "author": "michael.wallio@outlook.com",
+            "commit": "ad090827b33674bf072e390eed67ff9a74ce36f7",
+            "package": "focus"
+          }
+        ]
+      }
+    }
+  ]
+}
