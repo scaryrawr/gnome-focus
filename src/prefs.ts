@@ -1,16 +1,15 @@
-'use strict';
-
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
-const Settings = Me.imports.settings;
 const Gio = imports.gi.Gio;
 const Gtk = imports.gi.Gtk;
+
+import { get_settings } from './settings';
 
 function init() {}
 
 function buildPrefsWidget() {
-  const settings = Settings.get_settings();
+  const settings = get_settings();
 
   const widget = new Gtk.Grid({
     margin: 18,
@@ -99,3 +98,8 @@ function buildPrefsWidget() {
 
   return widget;
 }
+
+export default {
+  init,
+  buildPrefsWidget,
+};
