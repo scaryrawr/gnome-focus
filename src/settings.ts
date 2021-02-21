@@ -1,12 +1,13 @@
-'use strict';
-
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
-
 const Gio = imports.gi.Gio;
 
-class FocusSettings {
-  constructor(settings) {
+import { Settings } from '@imports/Gio-2.0';
+
+export class FocusSettings {
+  settings: Settings;
+
+  constructor(settings: Settings) {
     this.settings = settings;
   }
 
@@ -14,7 +15,7 @@ class FocusSettings {
     return this.settings.get_uint('focus-opacity');
   }
 
-  set_focus_opacity(val) {
+  set_focus_opacity(val: number) {
     this.settings.set_uint('focus-opacity', val);
   }
 
@@ -22,7 +23,7 @@ class FocusSettings {
     return this.settings.get_uint('special-focus-opacity');
   }
 
-  set_special_focus_opacity(val) {
+  set_special_focus_opacity(val: number) {
     this.settings.set_uint('special-focus-opacity', val);
   }
 
@@ -30,12 +31,12 @@ class FocusSettings {
     return this.settings.get_uint('inactive-opacity');
   }
 
-  set_inactive_opacity(val) {
+  set_inactive_opacity(val: number) {
     this.settings.set_uint('inactive-opacity', val);
   }
 }
 
-function get_settings() {
+export function get_settings() {
   const schema = Gio.SettingsSchemaSource.new_from_directory(
     Me.dir.get_child('schemas').get_path(),
     Gio.SettingsSchemaSource.get_default(),
@@ -44,7 +45,7 @@ function get_settings() {
 
   return new FocusSettings(
     new Gio.Settings({
-      settings_schema: schema.lookup('org.gnome.shell.extensions.focus', true),
+      settings_schema: schema.lookup('org.gnome.shell.extensions.focus', true) ?? undefined,
     })
   );
 }
