@@ -123,11 +123,7 @@ export class GnomeFocusManager {
       }
     }
 
-    if (
-      window_actor.is_destroyed() ||
-      !is_valid_window_type(window_actor.get_meta_window()) ||
-      this.is_ignored(window_actor)
-    ) {
+    if (window_actor.is_destroyed() || this.is_ignored(window_actor)) {
       delete this.active_window_actor;
       return;
     }
