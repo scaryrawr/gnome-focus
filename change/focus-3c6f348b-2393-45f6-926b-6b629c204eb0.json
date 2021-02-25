@@ -1,0 +1,7 @@
+{
+  "type": "minor",
+  "comment": "feat: Add background blur",
+  "packageName": "focus",
+  "email": "michael.wallio@outlook.com",
+  "dependentChangeType": "patch"
+}
