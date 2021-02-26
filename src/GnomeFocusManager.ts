@@ -41,7 +41,10 @@ export class GnomeFocusManager {
     return (
       is_valid_window_type(window) &&
       this.special_focus.some(
-        criteria => criteria === window.get_wm_class() || criteria === window.get_wm_class_instance()
+        criteria =>
+          criteria === window.get_wm_class() ||
+          criteria === window.get_wm_class_instance() ||
+          criteria === window.get_title()
       )
     );
   };
@@ -59,7 +62,10 @@ export class GnomeFocusManager {
     return (
       !is_valid_window_type(window) ||
       this.ignore_inactive.some(
-        criteria => criteria === window.get_wm_class() || criteria === window.get_wm_class_instance()
+        criteria =>
+          criteria === window.get_wm_class() ||
+          criteria === window.get_wm_class_instance() ||
+          criteria === window.get_title()
       )
     );
   };
