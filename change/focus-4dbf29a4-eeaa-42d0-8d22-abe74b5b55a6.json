@@ -1,7 +1,0 @@
-{
-  "type": "patch",
-  "comment": "minor: Add experimental tag",
-  "packageName": "focus",
-  "email": "michael.wallio@outlook.com",
-  "dependentChangeType": "patch"
-}

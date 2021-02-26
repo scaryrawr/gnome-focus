@@ -1,7 +1,0 @@
-{
-  "type": "patch",
-  "comment": "fix: Add window title to special criteria",
-  "packageName": "focus",
-  "email": "michael.wallio@outlook.com",
-  "dependentChangeType": "patch"
-}
