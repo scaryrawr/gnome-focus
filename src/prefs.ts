@@ -13,7 +13,6 @@ function buildPrefsWidget() {
   const settings = get_settings();
 
   const widget = new Gtk.Grid({
-    margin: 18,
     column_spacing: 12,
     row_spacing: 12,
     visible: true,
@@ -81,11 +80,12 @@ function buildPrefsWidget() {
 
   const blur_toggle = new Gtk.Switch({
     visible: true,
-    state: settings.is_background_blur,
+    active: settings.is_background_blur,
   });
 
-  blur_toggle.connect('state-changed', toggle => {
-    settings.set_is_background_blur(toggle.get_state());
+  blur_toggle.connect('notify::active', () => {
+    settings.set_is_background_blur(blur_toggle.get_active());
+    Gio.Settings.sync();
   });
 
   widget.attach(blur_label, 0, 7, 1, 1);

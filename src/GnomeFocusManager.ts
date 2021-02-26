@@ -1,4 +1,4 @@
-import { Window, WindowActor } from '@imports/Meta-7';
+import { Window, WindowActor } from '@imports/Meta-8';
 import { FocusSettings } from './settings';
 import { BlurEffect } from '@imports/Shell-0.1';
 
@@ -88,12 +88,14 @@ export class GnomeFocusManager {
       return;
     }
 
-    let blur_effect = window_actor.get_effect(BLUR_EFFECT_NAME) as BlurEffect | null;
+    let blur_effect = (window_actor.get_effect(BLUR_EFFECT_NAME) as unknown) as BlurEffect | null;
     if (blur && null === blur_effect) {
       const blur_effect = Shell.BlurEffect.new();
       blur_effect.set_mode(Shell.BlurMode.BACKGROUND);
       blur_effect.set_sigma(sigma);
       blur_effect.set_enabled(blur);
+
+      // @ts-ignore
       window_actor.add_effect_with_name(BLUR_EFFECT_NAME, blur_effect);
     }
 
