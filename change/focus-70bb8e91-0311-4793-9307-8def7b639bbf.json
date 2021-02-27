@@ -1,0 +1,7 @@
+{
+  "type": "patch",
+  "comment": "Increase time on new window",
+  "packageName": "focus",
+  "email": "michael.wallio@outlook.com",
+  "dependentChangeType": "patch"
+}
