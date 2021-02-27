@@ -52,7 +52,7 @@ function enable() {
 
     // In Wayland, when we have a new window, we need ot have a slight delay before
     // attempting to set the transparency.
-    GLib.timeout_add(GLib.PRIORITY_DEFAULT, 250, function () {
+    GLib.timeout_add(GLib.PRIORITY_DEFAULT, 350, function () {
       if (!win) {
         return false;
       }
@@ -65,7 +65,7 @@ function enable() {
       // otherwise we end up being called more than once
       try {
         const actor = get_window_actor(win);
-        if (undefined === actor) {
+        if (undefined === actor || actor.is_destroyed()) {
           return false;
         }
 
