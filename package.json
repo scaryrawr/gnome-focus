@@ -3,9 +3,6 @@
   "version": "1.6.0",
   "description": "Transparent inactive windows",
   "scripts": {
-    "bb": "beachball change",
-    "bb:bump": "beachball bump",
-    "bb:check": "beachball check",
     "types:clean": "[ -d ./gir ] && rm -r ./gir || echo ''",
     "build:meta": "node generate-metadata.js",
     "build:schemas": "glib-compile-schemas schemas",
@@ -39,7 +36,6 @@
     "@rollup/plugin-typescript": "^8.2.0",
     "@typescript-eslint/eslint-plugin": "^4.15.1",
     "@typescript-eslint/parser": "^4.15.1",
-    "beachball": "^1.52.0",
     "eslint": "^7.20.0",
     "prettier": "^2.2.1",
     "rollup": "^2.39.0",
