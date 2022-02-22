@@ -1,6 +1,6 @@
 {
 	"uuid": "focus@scaryrawr.github.io",
 	"name": "Focus",
-	"shell-version": ["3.38", "40.beta"],
+	"shell-version": ["3.38", "40.beta", "40"],
 	"url": "https://github.com/scaryrawr/gnome-focus"
 }
