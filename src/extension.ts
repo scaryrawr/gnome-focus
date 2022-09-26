@@ -3,7 +3,7 @@ const Me = ExtensionUtils.getCurrentExtension();
 
 const GLib = imports.gi.GLib;
 
-import { Window } from '@imports/Meta-8';
+import { Window } from '@imports/Meta-10';
 import { load_config } from './config';
 import { GnomeFocusManager, is_valid_window_type } from './GnomeFocusManager';
 
