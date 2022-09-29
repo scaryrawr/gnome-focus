@@ -17,6 +17,8 @@ let create_signal: number | undefined;
 
 let extension_instance: GnomeFocusManager | undefined;
 
+let timeout_id: number | undefined;
+
 function get_window_actor(window: Window) {
   for (const actor of global.get_window_actors()) {
     if (!actor.is_destroyed() && actor.get_meta_window() === window) {
@@ -52,12 +54,14 @@ function enable() {
 
     // In Wayland, when we have a new window, we need ot have a slight delay before
     // attempting to set the transparency.
-    GLib.timeout_add(GLib.PRIORITY_DEFAULT, 350, function () {
+    timeout_id = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 350, () => {
       if (!win) {
+        timeout_id = undefined;
         return false;
       }
 
       if (undefined === extension_instance) {
+        timeout_id = undefined;
         return false;
       }
 
@@ -66,6 +70,7 @@ function enable() {
       try {
         const actor = get_window_actor(win);
         if (undefined === actor || actor.is_destroyed()) {
+          timeout_id = undefined;
           return false;
         }
 
@@ -78,6 +83,7 @@ function enable() {
         log(`Error on new window: ${err}`);
       }
 
+      timeout_id = undefined;
       return false;
     });
   });
@@ -110,6 +116,10 @@ function disable() {
   if (undefined !== create_signal) {
     global.display.disconnect(create_signal);
     create_signal = undefined;
+  }
+
+  if (undefined !== timeout_id && null !== timeout_id) {
+    GLib.Source.remove(timeout_id);
   }
 
   for (const actor of global.get_window_actors()) {
