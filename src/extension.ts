@@ -1,13 +1,12 @@
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
-const GLib = imports.gi.GLib;
-
 import { Window } from '@imports/Meta-10';
 import { load_config } from './config';
 import { GnomeFocusManager, is_valid_window_type } from './GnomeFocusManager';
 
 import { get_settings } from './settings';
+import { Timeouts } from './timeout';
 
 type ExtendedWindow = Window & {
   _focus_extension_signal?: number;
@@ -17,7 +16,7 @@ let create_signal: number | undefined;
 
 let extension_instance: GnomeFocusManager | undefined;
 
-let timeout_id: number | undefined;
+let timeout_manager: Timeouts | undefined;
 
 function get_window_actor(window: Window) {
   for (const actor of global.get_window_actors()) {
@@ -52,16 +51,16 @@ function enable() {
 
     win._focus_extension_signal = win.connect('focus', focus_changed);
 
+    timeout_manager ??= new Timeouts();
+
     // In Wayland, when we have a new window, we need ot have a slight delay before
     // attempting to set the transparency.
-    timeout_id = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 350, () => {
+    timeout_manager.add(() => {
       if (!win) {
-        timeout_id = undefined;
         return false;
       }
 
       if (undefined === extension_instance) {
-        timeout_id = undefined;
         return false;
       }
 
@@ -70,7 +69,6 @@ function enable() {
       try {
         const actor = get_window_actor(win);
         if (undefined === actor || actor.is_destroyed()) {
-          timeout_id = undefined;
           return false;
         }
 
@@ -83,9 +81,8 @@ function enable() {
         log(`Error on new window: ${err}`);
       }
 
-      timeout_id = undefined;
       return false;
-    });
+    }, 350);
   });
 
   for (const actor of global.get_window_actors()) {
@@ -118,9 +115,8 @@ function disable() {
     create_signal = undefined;
   }
 
-  if (undefined !== timeout_id && null !== timeout_id) {
-    GLib.Source.remove(timeout_id);
-  }
+  timeout_manager?.clear();
+  timeout_manager = undefined;
 
   for (const actor of global.get_window_actors()) {
     if (actor.is_destroyed()) {
@@ -140,7 +136,7 @@ function disable() {
   }
 }
 
-export default function () {
+export default function (): { enable: () => void; disable: () => void } {
   return {
     enable,
     disable,
