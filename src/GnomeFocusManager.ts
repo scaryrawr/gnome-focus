@@ -13,7 +13,7 @@ const BLUR_EFFECT_NAME = 'gnome-focus-blur';
 
 /** Window Types that should be considered for focus changes */
 const WINDOW_TYPES = [Meta.WindowType.NORMAL];
-export function is_valid_window_type(window: Window) {
+export function is_valid_window_type(window: Window): boolean {
   return WINDOW_TYPES.includes(window.get_window_type());
 }
 
@@ -32,7 +32,7 @@ export class GnomeFocusManager {
     settings.on('is-background-blur', this.update_is_background_blur);
   }
 
-  is_special = (window_actor: WindowActor) => {
+  is_special = (window_actor: WindowActor): boolean => {
     if (!this.special_focus || window_actor.is_destroyed()) {
       return false;
     }
@@ -49,7 +49,7 @@ export class GnomeFocusManager {
     );
   };
 
-  is_ignored = (window_actor: WindowActor) => {
+  is_ignored = (window_actor: WindowActor): boolean => {
     if (window_actor.is_destroyed()) {
       return true;
     }
@@ -70,7 +70,7 @@ export class GnomeFocusManager {
     );
   };
 
-  static set_opacity(window_actor: WindowActor, percentage: number) {
+  static set_opacity(window_actor: WindowActor, percentage: number): void {
     if (window_actor.is_destroyed()) {
       return;
     }
@@ -83,19 +83,18 @@ export class GnomeFocusManager {
     window_actor.set_opacity(true_opacity);
   }
 
-  static set_blur(window_actor: WindowActor, blur: boolean, sigma: number) {
+  static set_blur(window_actor: WindowActor, blur: boolean, sigma: number): void {
     if (window_actor.is_destroyed() || !is_valid_window_type(window_actor.get_meta_window())) {
       return;
     }
 
-    let blur_effect = (window_actor.get_effect(BLUR_EFFECT_NAME) as unknown) as BlurEffect | null;
-    if (blur && null === blur_effect) {
+    const blur_effect = window_actor.get_effect(BLUR_EFFECT_NAME) as unknown as BlurEffect | null;
+    if (blur && !blur_effect) {
       const blur_effect = Shell.BlurEffect.new();
       blur_effect.set_mode(Shell.BlurMode.BACKGROUND);
       blur_effect.set_sigma(sigma);
       blur_effect.set_enabled(blur);
 
-      // @ts-ignore
       window_actor.add_effect_with_name(BLUR_EFFECT_NAME, blur_effect);
     }
 
@@ -109,7 +108,7 @@ export class GnomeFocusManager {
     }
   }
 
-  update_inactive_window_actor = (window_actor: WindowActor) => {
+  update_inactive_window_actor = (window_actor: WindowActor): void => {
     if (window_actor.is_destroyed() || this.is_ignored(window_actor)) {
       return;
     }
@@ -118,7 +117,7 @@ export class GnomeFocusManager {
     GnomeFocusManager.set_blur(window_actor, this.settings.is_background_blur, this.settings.blur_sigma);
   };
 
-  set_active_window_actor = (window_actor: WindowActor) => {
+  set_active_window_actor = (window_actor: WindowActor): void => {
     if (this.active_window_actor === window_actor) {
       return;
     }
@@ -152,7 +151,7 @@ export class GnomeFocusManager {
     });
   };
 
-  update_special_focused_window_opacity = (value: number) => {
+  update_special_focused_window_opacity = (value: number): void => {
     if (undefined === this.active_window_actor || !this.is_special(this.active_window_actor)) {
       return;
     }
@@ -160,7 +159,7 @@ export class GnomeFocusManager {
     GnomeFocusManager.set_opacity(this.active_window_actor, value);
   };
 
-  update_focused_window_opacity = (value: number) => {
+  update_focused_window_opacity = (value: number): void => {
     if (undefined === this.active_window_actor || this.is_special(this.active_window_actor)) {
       return;
     }
@@ -168,7 +167,7 @@ export class GnomeFocusManager {
     GnomeFocusManager.set_opacity(this.active_window_actor, value);
   };
 
-  update_inactive_windows_opacity = (value: number) => {
+  update_inactive_windows_opacity = (value: number): void => {
     for (const window_actor of global.get_window_actors()) {
       if (window_actor === this.active_window_actor || this.is_ignored(window_actor)) {
         continue;
@@ -178,7 +177,7 @@ export class GnomeFocusManager {
     }
   };
 
-  update_is_background_blur = (blur: boolean) => {
+  update_is_background_blur = (blur: boolean): void => {
     const sigma = this.settings.blur_sigma;
     for (const window_actor of global.get_window_actors()) {
       if (this.is_ignored(window_actor)) {
@@ -189,7 +188,7 @@ export class GnomeFocusManager {
     }
   };
 
-  update_blur_sigma = (sigma: number) => {
+  update_blur_sigma = (sigma: number): void => {
     for (const window_actor of global.get_window_actors()) {
       if (this.is_ignored(window_actor)) {
         continue;
@@ -199,7 +198,7 @@ export class GnomeFocusManager {
     }
   };
 
-  disable() {
+  disable(): void {
     this.settings.clear();
     for (const window_actor of global.get_window_actors()) {
       GnomeFocusManager.set_opacity(window_actor, 100);

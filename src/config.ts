@@ -37,8 +37,8 @@ export function load_config<T>(name: string): T | undefined {
   }
 }
 
-export function write_config<T>(name: string, data: T) {
-    const write_data = byteArray.fromString(JSON.stringify(data, null, 2));
-    const file_path = get_config_path(name);
-    return GLib.file_set_contents(file_path, write_data);
+export function write_config<T>(name: string, data: T): boolean {
+  const write_data = byteArray.fromString(JSON.stringify(data, null, 2));
+  const file_path = get_config_path(name);
+  return GLib.file_set_contents(file_path, write_data);
 }
