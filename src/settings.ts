@@ -37,47 +37,47 @@ export class FocusSettings {
     this.settings = settings;
   }
 
-  get focus_opacity() {
+  get focus_opacity(): number {
     return this.settings.get_uint('focus-opacity');
   }
 
-  set_focus_opacity(val: number) {
+  set_focus_opacity(val: number): void {
     this.settings.set_uint('focus-opacity', val);
   }
 
-  get special_focus_opacity() {
+  get special_focus_opacity(): number {
     return this.settings.get_uint('special-focus-opacity');
   }
 
-  set_special_focus_opacity(val: number) {
+  set_special_focus_opacity(val: number): void {
     this.settings.set_uint('special-focus-opacity', val);
   }
 
-  get inactive_opacity() {
+  get inactive_opacity(): number {
     return this.settings.get_uint('inactive-opacity');
   }
 
-  set_inactive_opacity(val: number) {
+  set_inactive_opacity(val: number): void {
     this.settings.set_uint('inactive-opacity', val);
   }
 
-  get blur_sigma() {
+  get blur_sigma(): number {
     return this.settings.get_uint('blur-sigma');
   }
 
-  set_blur_sigma(val: number) {
+  set_blur_sigma(val: number): void {
     this.settings.set_uint('blur-sigma', val);
   }
 
-  get is_background_blur() {
+  get is_background_blur(): boolean {
     return this.settings.get_boolean('is-background-blur');
   }
 
-  set_is_background_blur(val: boolean) {
+  set_is_background_blur(val: boolean): void {
     this.settings.set_boolean('is-background-blur', val);
   }
 
-  on<E extends keyof SettingsChangeEvents>(event: E, callback: CallbackTypes<SettingsChangeEvents>[E]) {
+  on<E extends keyof SettingsChangeEvents>(event: E, callback: CallbackTypes<SettingsChangeEvents>[E]): void {
     if (this.connection === undefined) {
       this.connection = this.settings.connect('changed', (_, key: keyof SettingsChangeEvents) => {
         switch (key) {
@@ -97,7 +97,7 @@ export class FocusSettings {
     this.listeners[event].push(callback);
   }
 
-  off<E extends keyof SettingsChangeEvents>(event: E, callback: (value: SettingsChangeEvents[E]) => void) {
+  off<E extends keyof SettingsChangeEvents>(event: E, callback: (value: SettingsChangeEvents[E]) => void): void {
     const index = this.listeners[event].indexOf(callback);
     if (index >= 0) {
       this.listeners[event].slice(index, 1);
@@ -112,13 +112,13 @@ export class FocusSettings {
     this.clear();
   }
 
-  emit<E extends keyof SettingsChangeEvents>(event: E, value: SettingsChangeEvents[E]) {
+  emit<E extends keyof SettingsChangeEvents>(event: E, value: SettingsChangeEvents[E]): void {
     for (const listener of this.listeners[event]) {
       listener(value);
     }
   }
 
-  clear() {
+  clear(): void {
     if (this.connection !== undefined) {
       this.settings.disconnect(this.connection);
       delete this.connection;
@@ -132,7 +132,7 @@ export class FocusSettings {
   }
 }
 
-export function get_settings() {
+export function get_settings(): FocusSettings {
   const schema = Gio.SettingsSchemaSource.new_from_directory(
     Me.dir.get_child('schemas').get_path(),
     Gio.SettingsSchemaSource.get_default(),

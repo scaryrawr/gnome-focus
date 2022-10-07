@@ -2,9 +2,7 @@
 module.exports = {
   root: true,
   parser: '@typescript-eslint/parser', // Specifies the ESLint parser
-  plugins: [
-    '@typescript-eslint',
-  ],
+  plugins: ['@typescript-eslint'],
   extends: [
     'eslint:recommended',
     'plugin:@typescript-eslint/eslint-recommended',
@@ -13,13 +11,12 @@ module.exports = {
     'plugin:prettier/recommended', // Enables eslint-plugin-prettier and eslint-config-prettier. This will display prettier errors as ESLint errors. Make sure this is always the last configuration in the extends array.
   ],
   rules: {
-    semi: ['error', 'never'],
     'no-debugger': 'off',
     '@typescript-eslint/no-explicit-any': 'off',
     '@typescript-eslint/no-misused-new': 'off',
     '@typescript-eslint/triple-slash-reference': 'off',
     // For Gjs
-    'camelcase': 'off',
-    '@typescript-eslint/camelcase': 'off'
-  }
+    camelcase: 'off',
+    '@typescript-eslint/camelcase': 'off',
+  },
 };

@@ -5,11 +5,13 @@ const Gio = imports.gi.Gio;
 const Gtk = imports.gi.Gtk;
 const { Orientation } = Gtk;
 
+import { Widget } from '@imports/Gtk-3.0';
 import { get_settings } from './settings';
 
-function init() {}
+// eslint-disable-next-line @typescript-eslint/no-empty-function
+function init(): void {}
 
-function buildPrefsWidget() {
+function buildPrefsWidget(): Widget {
   const settings = get_settings();
 
   const widget = new Gtk.Grid({
@@ -90,7 +92,6 @@ function buildPrefsWidget() {
 
   widget.attach(blur_label, 0, 7, 1, 1);
 
-  // @ts-ignore
   widget.attach(blur_toggle, 1, 7, 1, 1);
 
   const blur_sigma_label = new Gtk.Label({
