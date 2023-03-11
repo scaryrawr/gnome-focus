@@ -1,14 +1,18 @@
 const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 
-import { Window } from '@imports/Meta-10';
+import Meta from '@imports/Meta-11';
+
+const Shell = imports.gi.Shell;
+const global = Shell.Global.get();
+
 import { load_config } from './config';
 import { GnomeFocusManager, is_valid_window_type } from './GnomeFocusManager';
 
 import { get_settings } from './settings';
 import { Timeouts } from './timeout';
 
-type ExtendedWindow = Window & {
+type ExtendedWindow = Meta.Window & {
   _focus_extension_signal?: number;
 };
 
@@ -18,7 +22,7 @@ let extension_instance: GnomeFocusManager | undefined;
 
 let timeout_manager: Timeouts | undefined;
 
-function get_window_actor(window: Window) {
+function get_window_actor(window: Meta.Window) {
   for (const actor of global.get_window_actors()) {
     if (!actor.is_destroyed() && actor.get_meta_window() === window) {
       return actor;
@@ -28,7 +32,7 @@ function get_window_actor(window: Window) {
   return undefined;
 }
 
-function focus_changed(window: Window) {
+function focus_changed(window: Meta.Window) {
   const actor = get_window_actor(window);
   if (actor) {
     extension_instance?.set_active_window_actor(actor);

@@ -2,8 +2,6 @@ const ExtensionUtils = imports.misc.extensionUtils;
 const Me = ExtensionUtils.getCurrentExtension();
 const Gio = imports.gi.Gio;
 
-import { Settings } from '@imports/Gio-2.0';
-
 type SettingsChangeEvents = {
   'focus-opacity': number;
   'special-opacity': number;

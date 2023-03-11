@@ -4,8 +4,9 @@ import resolve from '@rollup/plugin-node-resolve';
 
 const globals = {
   '@imports/Gjs': 'imports.gi',
-  '@imports/Meta-8': 'imports.gi.Meta',
+  '@imports/Meta-11': 'imports.gi.Meta',
   '@imports/Gio-2.0': 'imports.gi.Gio',
+  '@imports/Shell-0.1': 'imports.gi.Shell',
 };
 
 const external = Object.keys(globals);
