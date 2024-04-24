@@ -1,4 +1,4 @@
-import { Window, WindowActor } from '@imports/Meta-10';
+import { Meta } from '@girs/meta-14';
 import { FocusSettings } from './settings';
 import { BlurEffect } from '@imports/Shell-0.1';
 

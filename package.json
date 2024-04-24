@@ -3,10 +3,8 @@
   "version": "1.7.0",
   "description": "Transparent inactive windows",
   "scripts": {
-    "types:clean": "[ -d ./gir ] && rm -r ./gir || echo ''",
     "build:meta": "node generate-metadata.js",
     "build:schemas": "glib-compile-schemas schemas",
-    "build:types": "npm run types:clean && ts-for-gir generate",
     "build:clean": "[ -d ./dist ] && rm -r ./dist || echo ''",
     "build": "npm run build:clean && npm run build:schemas && mkdir dist && rollup -c && npm run build:meta",
     "build:package": "npm run build && cd ./dist && zip -r ../focus@scaryrawr.github.io.zip . && cd ..",
@@ -31,17 +29,24 @@
   },
   "homepage": "https://github.com/scaryrawr/gnome-focus#readme",
   "devDependencies": {
+    "@girs/gdk-4.0": "^4.0.0-3.3.0",
+    "@girs/gio-2.0": "^2.78.0-3.3.0",
+    "@girs/gjs": "^3.3.0",
+    "@girs/glib-2.0": "^2.78.0-3.3.0",
+    "@girs/gnome-shell": "^46.0.0-beta6",
+    "@girs/gtk-4.0": "^4.12.5-3.3.0",
+    "@girs/meta-14": "^14.0.0-3.3.0",
+    "@girs/shell-0.1": "^0.1.0-3.3.0",
+    "@girs/st-1.0": "^1.0.0-3.3.0",
     "@rollup/plugin-commonjs": "^17.1.0",
     "@rollup/plugin-node-resolve": "^11.2.0",
     "@rollup/plugin-typescript": "^8.2.0",
-    "@ts-for-gir/cli": "^3.0.0-beta.6",
     "@typescript-eslint/eslint-plugin": "^4.15.1",
     "@typescript-eslint/parser": "^4.15.1",
     "eslint": "^7.20.0",
     "prettier": "^2.2.1",
     "rollup": "^2.39.0",
     "rollup-plugin-copy": "^3.4.0",
-    "ts-for-gir": "^1.0.1",
-    "typescript": "^4.1.5"
+    "typescript": "^5.4.5"
   }
 }
