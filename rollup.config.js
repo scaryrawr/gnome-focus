@@ -8,7 +8,7 @@ const globals = {
   '@imports/Gio-2.0': 'imports.gi.Gio',
 };
 
-const external = Object.keys(globals);
+const external = ['@girs/.*', 'gi://.*'];
 
 const plugins = [
   typescript({

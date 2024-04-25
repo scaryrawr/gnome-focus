@@ -1,28 +1,14 @@
 {
-  "compilerOptions": {
-    "target": "ES2017",
+  "compilerOptions": {   
+    "lib": ["ESNext"],
+    "types": ["@girs/gtk-3.0"],
+    "target": "ESNext",
     "module": "ESNext",
-    "downlevelIteration": true,
+    "moduleResolution": "Bundler",
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
-    "strictFunctionTypes": true,
-    "strictBindCallApply": true,
-    "strictPropertyInitialization": true,
     "noImplicitThis": true,
     "alwaysStrict": true,
-    "removeComments": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-    "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "node",
-    "typeRoots": ["./gir"],
-    "baseUrl": ".",
-    "types": [],
-    "paths": {
-      "@imports/*": ["gir/@types/Gjs/*"]
-    }
-  }
+  },
 }
