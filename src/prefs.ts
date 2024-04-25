@@ -7,7 +7,7 @@ import { ExtensionPreferences } from 'resource:///org/gnome/Shell/Extensions/js/
 
 import * as Me from '../metadata.json';
 
-import { get_settings } from './settings';
+import { get_settings } from './settings.js';
 
 export default class GnomeFocusPreferences extends ExtensionPreferences {
   init() {}
@@ -22,7 +22,7 @@ export default class GnomeFocusPreferences extends ExtensionPreferences {
     });
 
     const title = new Gtk.Label({
-      label: '<b>' + Me.name + ' Extension Preferences</b>',
+      label: '<b>' + Me.default.name + ' Extension Preferences</b>',
       halign: Gtk.Align.START,
       useMarkup: true,
       visible: true,

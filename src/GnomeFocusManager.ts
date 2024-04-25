@@ -1,7 +1,7 @@
 import Meta from 'gi://Meta';
 import Shell from 'gi://Shell';
 
-import { FocusSettings } from './settings';
+import { FocusSettings } from './settings.js';
 
 /** 100% opacity value */
 const DEFAULT_OPACITY = 255;

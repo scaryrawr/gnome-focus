@@ -2,11 +2,12 @@
   "name": "focus",
   "version": "1.7.0",
   "description": "Transparent inactive windows",
+  "type": "module",
   "scripts": {
     "build:meta": "node generate-metadata.js",
     "build:schemas": "glib-compile-schemas schemas",
     "build:clean": "[ -d ./dist ] && rm -r ./dist || echo ''",
-    "build": "npm run build:clean && npm run build:schemas && mkdir dist && rollup -c && npm run build:meta",
+    "build": "yarn build:clean && yarn build:schemas && mkdir dist && yarn node esbuild.js",
     "build:package": "npm run build && cd ./dist && zip -r ../focus@scaryrawr.github.io.zip . && cd ..",
     "package:uninstall": "[ -d ~/.local/share/gnome-shell/extensions/focus@scaryrawr.github.io ] && rm -r ~/.local/share/gnome-shell/extensions/focus@scaryrawr.github.io || echo ''",
     "package:install": "npm run build:package && npm run package:uninstall && unzip focus@scaryrawr.github.io.zip -d ~/.local/share/gnome-shell/extensions/focus@scaryrawr.github.io"
@@ -38,15 +39,12 @@
     "@girs/meta-14": "^14.0.0-3.3.0",
     "@girs/shell-14": "^14.0.0-3.3.0",
     "@girs/st-1.0": "^1.0.0-3.3.0",
-    "@rollup/plugin-commonjs": "^17.1.0",
-    "@rollup/plugin-node-resolve": "^11.2.0",
-    "@rollup/plugin-typescript": "^11.1.6",
-    "@typescript-eslint/eslint-plugin": "^4.15.1",
-    "@typescript-eslint/parser": "^4.15.1",
-    "eslint": "^7.20.0",
-    "prettier": "^2.2.1",
-    "rollup": "^2.39.0",
-    "rollup-plugin-copy": "^3.4.0",
+    "@typescript-eslint/eslint-plugin": "^7.7.1",
+    "@typescript-eslint/parser": "^7.7.1",
+    "esbuild": "^0.20.2",
+    "eslint": "^9.1.1",
+    "prettier": "^3.2.5",
+    "tslib": "^2.6.2",
     "typescript": "^5.4.5"
   }
 }

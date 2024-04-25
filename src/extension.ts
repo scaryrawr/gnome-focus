@@ -2,11 +2,11 @@ import Meta from 'gi://Meta';
 import * as Me from '../metadata.json';
 import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
 
-import { load_config } from './config';
-import { GnomeFocusManager, is_valid_window_type } from './GnomeFocusManager';
+import { load_config } from './config.js';
+import { GnomeFocusManager, is_valid_window_type } from './GnomeFocusManager.js';
 
-import { get_settings } from './settings';
-import { Timeouts } from './timeout';
+import { get_settings } from './settings.js';
+import { Timeouts } from './timeout.js';
 
 type ExtendedWindow = Meta.Window & {
   _focus_extension_signal?: number;
@@ -37,7 +37,7 @@ function focus_changed(window: Meta.Window) {
 
 export default class GnomeFocus extends Extension {
   enable() {
-    log(`enabling ${Me.name}`);
+    log(`enabling ${Me.default.name}`);
 
     extension_instance = new GnomeFocusManager(
       get_settings(this.getSettings()),
@@ -109,7 +109,7 @@ export default class GnomeFocus extends Extension {
   }
 
   disable() {
-    log(`disabling ${Me.name}`);
+    log(`disabling ${Me.default.name}`);
 
     if (undefined !== create_signal) {
       global.display.disconnect(create_signal);
