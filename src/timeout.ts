@@ -18,7 +18,7 @@ export class Timeouts {
         }
 
         return result;
-      }))
+      })),
     );
   };
 

@@ -54,7 +54,7 @@ export default class GnomeFocusPreferences extends ExtensionPreferences {
     const [focus_opacity_label, focus_opacity_scale] = create_scale(
       'Focus Opacity',
       () => settings.focus_opacity,
-      value => settings.set_focus_opacity(value)
+      value => settings.set_focus_opacity(value),
     );
     widget.attach(focus_opacity_label, 0, 1, 1, 1);
     widget.attach(focus_opacity_scale, 0, 2, 2, 1);
@@ -62,7 +62,7 @@ export default class GnomeFocusPreferences extends ExtensionPreferences {
     const [inactive_opacity_label, inactive_opacity_scale] = create_scale(
       'Inactive Opacity',
       () => settings.inactive_opacity,
-      value => settings.set_inactive_opacity(value)
+      value => settings.set_inactive_opacity(value),
     );
     widget.attach(inactive_opacity_label, 0, 3, 1, 1);
     widget.attach(inactive_opacity_scale, 0, 4, 2, 1);
@@ -70,7 +70,7 @@ export default class GnomeFocusPreferences extends ExtensionPreferences {
     const [special_focus_opacity_label, special_focus_opacity_scale] = create_scale(
       'Special Focus Opacity',
       () => settings.special_focus_opacity,
-      value => settings.set_special_focus_opacity(value)
+      value => settings.set_special_focus_opacity(value),
     );
     widget.attach(special_focus_opacity_label, 0, 5, 1, 1);
     widget.attach(special_focus_opacity_scale, 0, 6, 2, 1);

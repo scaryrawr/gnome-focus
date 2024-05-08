@@ -42,7 +42,7 @@ export default class GnomeFocus extends Extension {
     extension_instance = new GnomeFocusManager(
       get_settings(this.getSettings()),
       load_config<string[]>('special_focus.json'),
-      load_config<string[]>('ignore_focus.json')
+      load_config<string[]>('ignore_focus.json'),
     );
 
     create_signal = global.display.connect('window-created', function (_, win: ExtendedWindow) {

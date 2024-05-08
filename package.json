@@ -7,7 +7,7 @@
     "build:meta": "node generate-metadata.js",
     "build:schemas": "glib-compile-schemas schemas",
     "build:clean": "[ -d ./dist ] && rm -r ./dist || echo ''",
-    "build": "yarn build:clean && yarn build:schemas && mkdir dist && yarn node esbuild.js",
+    "build": "yarn build:clean && yarn build:schemas && mkdir dist && yarn node esbuild.js && yarn build:meta",
     "build:package": "npm run build && cd ./dist && zip -r ../focus@scaryrawr.github.io.zip . && cd ..",
     "package:uninstall": "[ -d ~/.local/share/gnome-shell/extensions/focus@scaryrawr.github.io ] && rm -r ~/.local/share/gnome-shell/extensions/focus@scaryrawr.github.io || echo ''",
     "package:install": "npm run build:package && npm run package:uninstall && unzip focus@scaryrawr.github.io.zip -d ~/.local/share/gnome-shell/extensions/focus@scaryrawr.github.io"
