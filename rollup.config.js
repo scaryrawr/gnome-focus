@@ -1,7 +1,7 @@
 import typescript from '@rollup/plugin-typescript';
 
-const config = ['src/extensions.ts', 'src/prefs.ts'].map(file => ({
-  input: 'src/extension.ts',
+const config = ['src/extension.ts', 'src/prefs.ts'].map(input => ({
+  input,
   external: [/gi:\/\/.*/, /resource:\/\/.*/],
   output: {
     dir: 'dist',
