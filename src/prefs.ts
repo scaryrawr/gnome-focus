@@ -1,5 +1,5 @@
-import Gio from 'gi://Gio';
 import Gtk from 'gi://Gtk';
+import Gio from 'gi://Gio';
 
 const { Orientation } = Gtk;
 
@@ -12,7 +12,7 @@ import { get_settings } from './settings.js';
 export default class GnomeFocusPreferences extends ExtensionPreferences {
   init() {}
 
-  buildPrefsWidget() {
+  getPreferencesWidget() {
     const settings = get_settings(this.getSettings());
 
     const widget = new Gtk.Grid({

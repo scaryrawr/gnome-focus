@@ -1,4 +1,4 @@
-const GLib = imports.gi.GLib;
+import GLib from 'gi://GLib';
 
 export class Timeouts {
   /** IDs that have been created by the timeout */

@@ -1,4 +1,4 @@
-const GLib = imports.gi.GLib;
+import GLib from 'gi://GLib';
 import * as Me from '../metadata.json';
 const { byteArray } = imports;
 
