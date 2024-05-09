@@ -1,5 +1,4 @@
 import Meta from 'gi://Meta';
-import * as Me from '../metadata.json';
 import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
 
 import { load_config } from './config.js';
@@ -37,12 +36,10 @@ function focus_changed(window: Meta.Window) {
 
 export default class GnomeFocus extends Extension {
   enable() {
-    log(`enabling ${Me.default.name}`);
-
     extension_instance = new GnomeFocusManager(
       get_settings(this.getSettings()),
-      load_config<string[]>('special_focus.json'),
-      load_config<string[]>('ignore_focus.json'),
+      load_config<string[]>(this.metadata, 'special_focus.json'),
+      load_config<string[]>(this.metadata, 'ignore_focus.json')
     );
 
     create_signal = global.display.connect('window-created', function (_, win: ExtendedWindow) {
@@ -79,7 +76,7 @@ export default class GnomeFocus extends Extension {
             extension_instance.update_inactive_window_actor(actor);
           }
         } catch (err) {
-          log(`Error on new window: ${err}`);
+          console.error(`Error on new window: ${err}`);
         }
 
         return false;
@@ -109,8 +106,6 @@ export default class GnomeFocus extends Extension {
   }
 
   disable() {
-    log(`disabling ${Me.default.name}`);
-
     if (undefined !== create_signal) {
       global.display.disconnect(create_signal);
       create_signal = undefined;

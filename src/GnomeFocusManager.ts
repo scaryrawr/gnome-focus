@@ -21,7 +21,7 @@ export class GnomeFocusManager {
   constructor(
     readonly settings: FocusSettings,
     readonly special_focus: string[] | undefined,
-    readonly ignore_inactive: string[] | undefined,
+    readonly ignore_inactive: string[] | undefined
   ) {
     settings.on('focus-opacity', this.update_focused_window_opacity);
     settings.on('special-opacity', this.update_special_focused_window_opacity);
@@ -43,7 +43,7 @@ export class GnomeFocusManager {
         criteria =>
           criteria === window.get_wm_class() ||
           criteria === window.get_wm_class_instance() ||
-          criteria === window.get_title(),
+          criteria === window.get_title()
       )
     );
   };
@@ -65,7 +65,7 @@ export class GnomeFocusManager {
           criteria =>
             criteria === window.get_wm_class() ||
             criteria === window.get_wm_class_instance() ||
-            criteria === window.get_title(),
+            criteria === window.get_title()
         ))
     );
   };
