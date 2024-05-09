@@ -3,6 +3,7 @@
   "version": "1.8.0",
   "description": "Transparent inactive windows",
   "type": "module",
+  "private": true,
   "scripts": {
     "build:meta": "node generate-metadata.js",
     "build:schemas": "glib-compile-schemas schemas",

@@ -1,6 +1,5 @@
 import GLib from 'gi://GLib';
 import * as Me from '../metadata.json';
-const { byteArray } = imports;
 
 function get_configuration_dir() {
   const config_dir = GLib.build_filenamev([GLib.get_user_config_dir(), Me.default.uuid]);
@@ -28,14 +27,14 @@ export function load_config<T>(name: string): T | undefined {
   }
 
   try {
-    return JSON.parse(byteArray.toString(content));
+    return JSON.parse(new TextDecoder().decode(content));
   } catch {
     return undefined;
   }
 }
 
 export function write_config<T>(name: string, data: T): boolean {
-  const write_data = byteArray.fromString(JSON.stringify(data, null, 2));
+  const write_data = new TextEncoder().encode(JSON.stringify(data, null, 2));
   const file_path = get_config_path(name);
   return GLib.file_set_contents(file_path, write_data);
 }
