@@ -11,15 +11,12 @@
     "strictPropertyInitialization": true,
     "noImplicitThis": true,
     "alwaysStrict": true,
-    "resolveJsonModule": true,
-    "removeComments": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "NodeNext",
-    "types": ["@girs/gjs", "@girs/gjs/dom", "@girs/gnome-shell/ambient"],
     "lib": ["ESNext"]
   }
 }
