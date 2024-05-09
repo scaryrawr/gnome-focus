@@ -1,8 +1,4 @@
-const ExtensionUtils = imports.misc.extensionUtils;
-const Me = ExtensionUtils.getCurrentExtension();
-const Gio = imports.gi.Gio;
-
-import { Settings } from '@imports/Gio-2.0';
+import Gio from 'gi://Gio';
 
 type SettingsChangeEvents = {
   'focus-opacity': number;
@@ -23,7 +19,7 @@ type ListenerMap<Type> = {
 type SettingsListenerMap = ListenerMap<SettingsChangeEvents>;
 
 export class FocusSettings {
-  settings: Settings;
+  settings: Gio.Settings;
   connection: number | undefined;
   listeners: SettingsListenerMap = {
     'focus-opacity': [],
@@ -33,7 +29,7 @@ export class FocusSettings {
     'is-background-blur': [],
   };
 
-  constructor(settings: Settings) {
+  constructor(settings: Gio.Settings) {
     this.settings = settings;
   }
 
@@ -132,16 +128,6 @@ export class FocusSettings {
   }
 }
 
-export function get_settings(): FocusSettings {
-  const schema = Gio.SettingsSchemaSource.new_from_directory(
-    Me.dir.get_child('schemas').get_path(),
-    Gio.SettingsSchemaSource.get_default(),
-    false
-  );
-
-  return new FocusSettings(
-    new Gio.Settings({
-      settings_schema: schema.lookup('org.gnome.shell.extensions.focus', true) ?? undefined,
-    })
-  );
+export function get_settings(settings: Gio.Settings): FocusSettings {
+  return new FocusSettings(settings);
 }

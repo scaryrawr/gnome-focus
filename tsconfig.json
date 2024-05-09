@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "target": "ES2017",
-    "module": "ESNext",
+    "target": "ESNext",
+    "module": "NodeNext",
     "downlevelIteration": true,
     "strict": true,
     "noImplicitAny": true,
@@ -11,18 +11,15 @@
     "strictPropertyInitialization": true,
     "noImplicitThis": true,
     "alwaysStrict": true,
+    "resolveJsonModule": true,
     "removeComments": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
-    "moduleResolution": "node",
-    "typeRoots": ["./gir"],
-    "baseUrl": ".",
-    "types": [],
-    "paths": {
-      "@imports/*": ["gir/@types/Gjs/*"]
-    }
+    "moduleResolution": "NodeNext",
+    "types": ["@girs/gjs", "@girs/gjs/dom", "@girs/gnome-shell/ambient"],
+    "lib": ["ESNext"]
   }
 }

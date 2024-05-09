@@ -1,18 +1,15 @@
-const ExtensionUtils = imports.misc.extensionUtils;
-const Me = ExtensionUtils.getCurrentExtension();
-
-const GLib = imports.gi.GLib;
-
+import GLib from 'gi://GLib';
+import * as Me from '../metadata.json';
 const { byteArray } = imports;
 
 function get_configuration_dir() {
-  const config_dir = GLib.build_filenamev([GLib.get_user_config_dir(), Me.metadata.uuid]);
+  const config_dir = GLib.build_filenamev([GLib.get_user_config_dir(), Me.default.uuid]);
   if (GLib.file_test(config_dir, GLib.FileTest.IS_DIR)) {
     return config_dir;
   }
 
   // Legacy configuration location
-  return GLib.build_filenamev([GLib.get_user_config_dir(), Me.metadata.name]);
+  return GLib.build_filenamev([GLib.get_user_config_dir(), Me.default.name]);
 }
 
 function get_config_path(name: string) {
