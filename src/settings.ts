@@ -1,35 +1,21 @@
-import Gio from 'gi://Gio';
+import type Gio from 'gi://Gio';
+import { EventEmitter } from './utilities/EventEmitter.js';
+import type { SafeEmitter } from './utilities/SafeEmitter.js';
 
 type SettingsChangeEvents = {
-  'focus-opacity': number;
-  'special-opacity': number;
-  'inactive-opacity': number;
-  'blur-sigma': number;
-  'is-background-blur': boolean;
+  'focus-opacity': [number];
+  'special-opacity': [number];
+  'inactive-opacity': [number];
+  'blur-sigma': [number];
+  'is-background-blur': [boolean];
 };
 
-type CallbackTypes<Type> = {
-  [Property in keyof Type]: (args: Type[Property]) => void;
-};
-
-type ListenerMap<Type> = {
-  [Property in keyof Type]: Array<(value: Type[Property]) => void>;
-};
-
-type SettingsListenerMap = ListenerMap<SettingsChangeEvents>;
-
-export class FocusSettings {
+export class FocusSettings extends EventEmitter implements SafeEmitter<SettingsChangeEvents> {
   settings: Gio.Settings;
   connection: number | undefined;
-  listeners: SettingsListenerMap = {
-    'focus-opacity': [],
-    'inactive-opacity': [],
-    'special-opacity': [],
-    'blur-sigma': [],
-    'is-background-blur': []
-  };
 
   constructor(settings: Gio.Settings) {
+    super();
     this.settings = settings;
   }
 
@@ -73,58 +59,13 @@ export class FocusSettings {
     this.settings.set_boolean('is-background-blur', val);
   }
 
-  on<E extends keyof SettingsChangeEvents>(event: E, callback: CallbackTypes<SettingsChangeEvents>[E]): void {
-    if (this.connection === undefined) {
-      this.connection = this.settings.connect('changed', (_, key: keyof SettingsChangeEvents) => {
-        switch (key) {
-          case 'focus-opacity':
-          case 'inactive-opacity':
-          case 'special-opacity':
-          case 'blur-sigma':
-            this.emit(key, this.settings.get_uint(key));
-            break;
-          case 'is-background-blur':
-            this.emit(key, this.settings.get_boolean(key));
-            break;
-        }
-      });
-    }
-
-    this.listeners[event].push(callback);
-  }
-
-  off<E extends keyof SettingsChangeEvents>(event: E, callback: (value: SettingsChangeEvents[E]) => void): void {
-    const index = this.listeners[event].indexOf(callback);
-    if (index >= 0) {
-      this.listeners[event].slice(index, 1);
-    }
-
-    for (const key in this.listeners) {
-      if (this.listeners[key as keyof SettingsChangeEvents].length > 0) {
-        return;
-      }
-    }
-
-    this.clear();
-  }
-
-  emit<E extends keyof SettingsChangeEvents>(event: E, value: SettingsChangeEvents[E]): void {
-    for (const listener of this.listeners[event]) {
-      listener(value);
-    }
-  }
-
   clear(): void {
     if (this.connection !== undefined) {
       this.settings.disconnect(this.connection);
       delete this.connection;
     }
 
-    for (const key in this.listeners) {
-      if (this.listeners[key as keyof SettingsChangeEvents].length > 0) {
-        return;
-      }
-    }
+    this.removeAllListeners();
   }
 }
 

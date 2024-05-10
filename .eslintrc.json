@@ -12,6 +12,7 @@
   "rules": {
     "no-duplicate-imports": "error",
     "import/no-unresolved": "off",
+    "@typescript-eslint/consistent-type-imports": "error",
     "@typescript-eslint/naming-convention": [
       "error",
       {

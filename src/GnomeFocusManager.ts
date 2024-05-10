@@ -1,7 +1,7 @@
 import Meta from 'gi://Meta';
 import Shell from 'gi://Shell';
 
-import { FocusSettings } from './settings.js';
+import type { FocusSettings } from './settings.js';
 
 /** 100% opacity value */
 const DEFAULT_OPACITY = 255;
@@ -125,7 +125,7 @@ export class GnomeFocusManager {
 
     if (this.active_window_actor) {
       this.update_inactive_window_actor(this.active_window_actor);
-      if (this.active_destroy_signal != null) {
+      if (this.active_destroy_signal !== undefined) {
         this.active_window_actor.disconnect(this.active_destroy_signal);
         delete this.active_destroy_signal;
       }
