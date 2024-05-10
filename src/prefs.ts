@@ -1,8 +1,6 @@
 import Gtk from 'gi://Gtk';
 import Gio from 'gi://Gio';
 
-const { Orientation } = Gtk;
-
 import { ExtensionPreferences } from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
 import { get_settings } from './settings.js';
@@ -35,7 +33,7 @@ export default class GnomeFocusPreferences extends ExtensionPreferences {
         visible: true
       });
 
-      const item_scale = Gtk.Scale.new_with_range(Orientation.HORIZONTAL, 50, 100, 5);
+      const item_scale = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 50, 100, 5);
       item_scale.set_visible(true);
       item_scale.set_value(get_current_value());
       item_scale.connect('change-value', () => {
