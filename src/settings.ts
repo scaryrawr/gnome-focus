@@ -9,11 +9,11 @@ type SettingsChangeEvents = {
 };
 
 type CallbackTypes<Type> = {
-  [Property in keyof Type]: (value: Type[Property]) => void;
+  [Property in keyof Type]: (args: Type[Property]) => void;
 };
 
 type ListenerMap<Type> = {
-  [Property in keyof Type]: Array<(value: any) => void>;
+  [Property in keyof Type]: Array<(value: Type[Property]) => void>;
 };
 
 type SettingsListenerMap = ListenerMap<SettingsChangeEvents>;
@@ -26,7 +26,7 @@ export class FocusSettings {
     'inactive-opacity': [],
     'special-opacity': [],
     'blur-sigma': [],
-    'is-background-blur': [],
+    'is-background-blur': []
   };
 
   constructor(settings: Gio.Settings) {

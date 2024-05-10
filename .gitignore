@@ -3,5 +3,5 @@ dist/
 gir/
 node_modules/
 .rollup.cache/
-.vscode/
 *.zip
+gschemas.compiled

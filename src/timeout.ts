@@ -9,16 +9,16 @@ export class Timeouts {
   }
 
   add = (callback: () => boolean, interval = 0, priority = GLib.PRIORITY_DEFAULT): void => {
-    let timeout_id: number | undefined = undefined;
+    let timeout_id: number | null = null;
     this.active.add(
       (timeout_id = GLib.timeout_add(priority, interval, (): boolean => {
         const result = callback();
-        if (!result && timeout_id) {
+        if (!result && timeout_id !== null) {
           this.active.delete(timeout_id);
         }
 
         return result;
-      })),
+      }))
     );
   };
 
