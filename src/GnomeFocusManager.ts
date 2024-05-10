@@ -125,7 +125,7 @@ export class GnomeFocusManager {
 
     if (this.active_window_actor) {
       this.update_inactive_window_actor(this.active_window_actor);
-      if (this.active_destroy_signal) {
+      if (this.active_destroy_signal != null) {
         this.active_window_actor.disconnect(this.active_destroy_signal);
         delete this.active_destroy_signal;
       }

@@ -8,7 +8,8 @@
     "build:meta": "node generate-metadata.js",
     "build:schemas": "glib-compile-schemas schemas",
     "build:clean": "[ -d ./dist ] && rm -r ./dist/* || echo ''",
-    "build": "yarn build:schemas && npx rollup -c && yarn build:meta",
+    "eslint": "eslint .",
+    "build": "yarn build:schemas && yarn eslint && npx rollup -c && yarn build:meta",
     "build:package": "npm run build && cd ./dist && zip -r ../focus@scaryrawr.github.io.zip . && cd ..",
     "package:uninstall": "[ -d ~/.local/share/gnome-shell/extensions/focus@scaryrawr.github.io ] && rm -r ~/.local/share/gnome-shell/extensions/focus@scaryrawr.github.io || echo ''",
     "package:install": "npm run build:package && npm run package:uninstall && unzip focus@scaryrawr.github.io.zip -d ~/.local/share/gnome-shell/extensions/focus@scaryrawr.github.io"
@@ -31,6 +32,7 @@
   },
   "homepage": "https://github.com/scaryrawr/gnome-focus#readme",
   "devDependencies": {
+    "@eslint/js": "^9.2.0",
     "@girs/gdk-4.0": "^4.0.0-3.3.0",
     "@girs/gio-2.0": "^2.78.0-3.3.0",
     "@girs/gjs": "^3.3.0",
@@ -41,11 +43,13 @@
     "@girs/shell-14": "^14.0.0-3.3.0",
     "@girs/st-1.0": "^1.0.0-3.3.0",
     "@rollup/plugin-typescript": "^11.1.6",
-    "eslint": "^9.2.0",
+    "@typescript-eslint/parser": "^7.8.0",
+    "eslint": "^8.57.0",
     "eslint-plugin-jsdoc": "^48.2.4",
     "prettier": "^3.2.5",
     "rollup": "^4.17.2",
     "tslib": "^2.6.2",
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "typescript-eslint": "^7.8.0"
   }
 }
