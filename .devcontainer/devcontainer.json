@@ -1,0 +1,13 @@
+{
+  "name": "fedora",
+  "image": "fedora:latest",
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "username": "vscode"
+    },
+    "ghcr.io/devcontainers/features/node:1": {
+    }
+  },
+  "containerUser": "vscode",
+  "remoteUser": "vscode"
+}
