@@ -1,13 +1,11 @@
 {
-  "name": "fedora",
-  "image": "fedora:latest",
+  "name": "Gnome Focus",
+  "image": "ubuntu:noble",
   "features": {
-    "ghcr.io/devcontainers/features/common-utils:2": {
-      "username": "vscode"
-    },
-    "ghcr.io/devcontainers/features/node:1": {
-    }
+    "ghcr.io/devcontainers/features/common-utils:2": {},
+    "ghcr.io/devcontainers/features/node:1": {},
+    "ghcr.io/devcontainers/features/sshd:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {}
   },
-  "containerUser": "vscode",
-  "remoteUser": "vscode"
+  "containerUser": "vscode"
 }
