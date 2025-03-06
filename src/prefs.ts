@@ -128,7 +128,7 @@ export default class GnomeFocusPreferences extends ExtensionPreferences {
     });
 
     widget.attach(desaturate_percentage_label, 0, 9, 1, 1);
-    widget.attach(desaturate_percentage_scale, 1, 9, 1, 1);
+    widget.attach(desaturate_percentage_scale, 0, 10, 2, 1);
 
     return widget;
   }
