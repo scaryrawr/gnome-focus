@@ -102,7 +102,7 @@ export default class GnomeFocusPreferences extends ExtensionPreferences {
     widget.attach(special_focus_opacity_scale, 0, 6, 2, 1);
 
     const blur_label = new Gtk.Label({
-      label: 'Blur Background [Experimental]',
+      label: 'Blur',
       halign: Gtk.Align.START,
       visible: true
     });
