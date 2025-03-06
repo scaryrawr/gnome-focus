@@ -228,8 +228,5 @@ export class GnomeFocusManager {
       window_actor.remove_effect_by_name(BLUR_EFFECT_NAME);
       window_actor.remove_effect_by_name(DESATURATE_EFFECT_NAME);
     }
-
-    delete this.blur_effect;
-    delete this.desaturate_effect;
   }
 }
