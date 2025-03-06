@@ -1,6 +1,6 @@
 {
   "name": "focus",
-  "version": "1.9.0",
+  "version": "1.10.0",
   "description": "Transparent inactive windows",
   "type": "module",
   "private": true,

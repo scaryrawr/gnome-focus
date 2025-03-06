@@ -1,5 +1,4 @@
 import Gtk from 'gi://Gtk';
-import Gio from 'gi://Gio';
 
 import { ExtensionPreferences } from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
@@ -26,53 +25,84 @@ export default class GnomeFocusPreferences extends ExtensionPreferences {
 
     widget.attach(title, 0, 0, 1, 1);
 
-    const create_scale = (label: string, get_current_value: () => number, set_value: (value: number) => void) => {
+    const create_spin_button = ({
+      label,
+      get_current_value,
+      set_value,
+      min,
+      max,
+      step
+    }: {
+      label: string;
+      get_current_value: () => number;
+      set_value: (value: number) => void;
+      min: number;
+      max: number;
+      step: number;
+    }) => {
       const item_label = new Gtk.Label({
-        label,
+        label: `${label}: [${Math.floor(get_current_value())}]`,
         halign: Gtk.Align.START,
         visible: true
       });
 
-      const item_scale = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 50, 100, 5);
-      item_scale.set_visible(true);
-      item_scale.set_value(get_current_value());
-      item_scale.connect('change-value', () => {
-        const value = item_scale.get_value();
-        if (value <= 100 && value >= 50) {
-          set_value(value);
-          Gio.Settings.sync();
-        }
+      const spin_button = Gtk.SpinButton.new_with_range(min, max, step);
+      spin_button.set_visible(true);
+      spin_button.set_value(get_current_value());
+
+      spin_button.connect('value-changed', (emitter: Gtk.SpinButton) => {
+        const value = emitter.get_value();
+        item_label.set_label(`${label}: [${Math.floor(value)}]`);
+        set_value(value);
       });
 
-      return [item_label, item_scale];
+      return [item_label, spin_button];
     };
 
-    const [focus_opacity_label, focus_opacity_scale] = create_scale(
-      'Focus Opacity',
-      () => settings.focus_opacity,
-      value => settings.set_focus_opacity(value)
-    );
+    const [focus_opacity_label, focus_opacity_scale] = create_spin_button({
+      label: 'Focus Opacity',
+      get_current_value: () => settings.focus_opacity,
+      set_value: value => {
+        settings.set_focus_opacity(value);
+      },
+      min: 50,
+      max: 100,
+      step: 5
+    });
+
     widget.attach(focus_opacity_label, 0, 1, 1, 1);
     widget.attach(focus_opacity_scale, 0, 2, 2, 1);
 
-    const [inactive_opacity_label, inactive_opacity_scale] = create_scale(
-      'Inactive Opacity',
-      () => settings.inactive_opacity,
-      value => settings.set_inactive_opacity(value)
-    );
+    const [inactive_opacity_label, inactive_opacity_scale] = create_spin_button({
+      label: 'Inactive Opacity',
+      get_current_value: () => settings.inactive_opacity,
+      set_value: value => {
+        settings.set_inactive_opacity(value);
+      },
+      min: 50,
+      max: 100,
+      step: 5
+    });
+
     widget.attach(inactive_opacity_label, 0, 3, 1, 1);
     widget.attach(inactive_opacity_scale, 0, 4, 2, 1);
 
-    const [special_focus_opacity_label, special_focus_opacity_scale] = create_scale(
-      'Special Focus Opacity',
-      () => settings.special_focus_opacity,
-      value => settings.set_special_focus_opacity(value)
-    );
+    const [special_focus_opacity_label, special_focus_opacity_scale] = create_spin_button({
+      label: 'Special Focus Opacity',
+      get_current_value: () => settings.special_focus_opacity,
+      set_value: value => {
+        settings.set_special_focus_opacity(value);
+      },
+      min: 50,
+      max: 100,
+      step: 5
+    });
+
     widget.attach(special_focus_opacity_label, 0, 5, 1, 1);
     widget.attach(special_focus_opacity_scale, 0, 6, 2, 1);
 
     const blur_label = new Gtk.Label({
-      label: 'Blur Background [Experimental]',
+      label: 'Blur',
       halign: Gtk.Align.START,
       visible: true
     });
@@ -84,7 +114,6 @@ export default class GnomeFocusPreferences extends ExtensionPreferences {
 
     blur_toggle.connect('notify::active', () => {
       settings.set_is_background_blur(blur_toggle.get_active());
-      Gio.Settings.sync();
     });
 
     widget.attach(blur_label, 0, 7, 1, 1);
@@ -104,27 +133,20 @@ export default class GnomeFocusPreferences extends ExtensionPreferences {
 
     desaturate_toggle.connect('notify::active', () => {
       settings.set_is_desaturate_enabled(desaturate_toggle.get_active());
-      Gio.Settings.sync();
     });
 
     widget.attach(desaturate_label, 0, 8, 1, 1);
     widget.attach(desaturate_toggle, 1, 8, 1, 1);
 
-    const desaturate_percentage_label = new Gtk.Label({
+    const [desaturate_percentage_label, desaturate_percentage_scale] = create_spin_button({
       label: 'Desaturate Percentage',
-      halign: Gtk.Align.START,
-      visible: true
-    });
-
-    const desaturate_percentage_scale = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 0, 100, 1);
-    desaturate_percentage_scale.set_visible(true);
-    desaturate_percentage_scale.set_value(settings.desaturate_percentage);
-    desaturate_percentage_scale.connect('change-value', () => {
-      const value = desaturate_percentage_scale.get_value();
-      if (value <= 100 && value >= 0) {
+      get_current_value: () => settings.desaturate_percentage,
+      set_value: value => {
         settings.set_desaturate_percentage(value);
-        Gio.Settings.sync();
-      }
+      },
+      min: 0,
+      max: 100,
+      step: 10
     });
 
     widget.attach(desaturate_percentage_label, 0, 9, 1, 1);
