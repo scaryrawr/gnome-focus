@@ -21,5 +21,13 @@
 			<default>false</default>
 			<summary>Have blurred backgrounds</summary>
 		</key>
+		<key name="desaturate-percentage" type="u">
+			<default>50</default>
+			<summary>Desaturation percentage applied to inactive windows 0-100</summary>
+		</key>
+		<key name="is-desaturate-enabled" type="b">
+			<default>false</default>
+			<summary>Enable desaturation effect for inactive windows</summary>
+		</key>
 	</schema>
 </schemalist>
