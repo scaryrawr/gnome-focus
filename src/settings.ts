@@ -90,12 +90,10 @@ export class FocusSettings {
           case 'focus-opacity':
           case 'inactive-opacity':
           case 'special-opacity':
-          case 'is-background-blur':
-            this.emit(key, this.settings.get_boolean(key));
-            break;
           case 'desaturate-percentage':
             this.emit(key, this.settings.get_uint(key));
             break;
+          case 'is-background-blur':
           case 'is-desaturate-enabled':
             this.emit(key, this.settings.get_boolean(key));
             break;
