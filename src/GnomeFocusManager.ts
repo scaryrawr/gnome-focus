@@ -155,12 +155,8 @@ export class GnomeFocusManager {
       : this.settings.focus_opacity;
 
     GnomeFocusManager.set_opacity(this.active_window_actor, opacity);
-    this.set_blur(this.active_window_actor, this.settings.is_background_blur);
-    this.set_desaturate(
-      this.active_window_actor,
-      this.settings.is_desaturate_enabled,
-      this.settings.desaturate_percentage
-    );
+    this.set_blur(this.active_window_actor, false);
+    this.set_desaturate(this.active_window_actor, false, this.settings.desaturate_percentage);
 
     this.active_destroy_signal = this.active_window_actor.connect('destroy', actor => {
       if (this.active_window_actor === actor) {
