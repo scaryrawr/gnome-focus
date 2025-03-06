@@ -21,9 +21,6 @@ export function is_valid_window_type(window: Meta.Window): boolean {
 export class GnomeFocusManager {
   active_window_actor: Meta.WindowActor | undefined;
   active_destroy_signal: number | undefined;
-  blur_effect: Clutter.BlurEffect | undefined;
-  desaturate_effect: Clutter.DesaturateEffect | undefined;
-
   constructor(
     readonly settings: FocusSettings,
     readonly special_focus: string[] | undefined,
@@ -96,17 +93,13 @@ export class GnomeFocusManager {
       return;
     }
 
-    this.blur_effect ??= Clutter.BlurEffect.new();
-    this.blur_effect.set_enabled(true);
-
-    if (blur) {
-      const window_blur_effect = window_actor.get_effect(BLUR_EFFECT_NAME);
-      if (!window_blur_effect) {
-        window_actor.add_effect_with_name(BLUR_EFFECT_NAME, this.blur_effect);
-      }
-    } else {
-      window_actor.remove_effect_by_name(BLUR_EFFECT_NAME);
+    let blur_effect = window_actor.get_effect(BLUR_EFFECT_NAME);
+    if (!blur_effect) {
+      blur_effect = Clutter.BlurEffect.new();
+      window_actor.add_effect_with_name(BLUR_EFFECT_NAME, blur_effect);
     }
+
+    blur_effect.set_enabled(blur);
   }
 
   set_desaturate(window_actor: Meta.WindowActor, desaturate: boolean, percentage: number): void {
@@ -115,18 +108,14 @@ export class GnomeFocusManager {
       return;
     }
 
-    this.desaturate_effect ??= Clutter.DesaturateEffect.new(percentage / 100);
-    this.desaturate_effect.set_enabled(true);
-    this.desaturate_effect.set_factor(percentage / 100);
-
-    if (desaturate) {
-      const window_desaturate_effect = window_actor.get_effect(DESATURATE_EFFECT_NAME);
-      if (!window_desaturate_effect) {
-        window_actor.add_effect_with_name(DESATURATE_EFFECT_NAME, this.desaturate_effect);
-      }
-    } else {
-      window_actor.remove_effect_by_name(DESATURATE_EFFECT_NAME);
+    let desaturate_effect = window_actor.get_effect(DESATURATE_EFFECT_NAME) as Clutter.DesaturateEffect | null;
+    if (!desaturate_effect) {
+      desaturate_effect = Clutter.DesaturateEffect.new(percentage / 100);
+      window_actor.add_effect_with_name(DESATURATE_EFFECT_NAME, desaturate_effect);
     }
+
+    desaturate_effect.set_factor(percentage / 100);
+    desaturate_effect.set_enabled(desaturate);
   }
 
   update_inactive_window_actor = (window_actor: Meta.WindowActor): void => {
