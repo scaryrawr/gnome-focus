@@ -97,11 +97,15 @@ export class GnomeFocusManager {
     }
 
     this.blur_effect ??= Clutter.BlurEffect.new();
-    this.blur_effect.set_enabled(blur);
+    this.blur_effect.set_enabled(true);
 
-    const window_blur_effect = window_actor.get_effect(BLUR_EFFECT_NAME);
-    if (!window_blur_effect) {
-      window_actor.add_effect_with_name(BLUR_EFFECT_NAME, this.blur_effect);
+    if (blur) {
+      const window_blur_effect = window_actor.get_effect(BLUR_EFFECT_NAME);
+      if (!window_blur_effect) {
+        window_actor.add_effect_with_name(BLUR_EFFECT_NAME, this.blur_effect);
+      }
+    } else {
+      window_actor.remove_effect_by_name(BLUR_EFFECT_NAME);
     }
   }
 
@@ -112,12 +116,16 @@ export class GnomeFocusManager {
     }
 
     this.desaturate_effect ??= Clutter.DesaturateEffect.new(percentage / 100);
-    this.desaturate_effect.set_enabled(desaturate);
+    this.desaturate_effect.set_enabled(true);
     this.desaturate_effect.set_factor(percentage / 100);
 
-    const window_desaturate_effect = window_actor.get_effect(DESATURATE_EFFECT_NAME);
-    if (!window_desaturate_effect) {
-      window_actor.add_effect_with_name(DESATURATE_EFFECT_NAME, this.desaturate_effect);
+    if (desaturate) {
+      const window_desaturate_effect = window_actor.get_effect(DESATURATE_EFFECT_NAME);
+      if (!window_desaturate_effect) {
+        window_actor.add_effect_with_name(DESATURATE_EFFECT_NAME, this.desaturate_effect);
+      }
+    } else {
+      window_actor.remove_effect_by_name(DESATURATE_EFFECT_NAME);
     }
   }
 
