@@ -202,7 +202,7 @@ export class GnomeFocusManager {
 
   update_is_background_blur = (blur: boolean): void => {
     for (const window_actor of global.get_window_actors()) {
-      if (this.is_ignored(window_actor)) {
+      if (window_actor === this.active_window_actor || this.is_ignored(window_actor)) {
         continue;
       }
 
@@ -213,7 +213,7 @@ export class GnomeFocusManager {
   update_is_desaturate_enabled = (enabled: boolean): void => {
     const percentage = this.settings.desaturate_percentage;
     for (const window_actor of global.get_window_actors()) {
-      if (this.is_ignored(window_actor)) {
+      if (window_actor === this.active_window_actor || this.is_ignored(window_actor)) {
         continue;
       }
 
@@ -224,7 +224,7 @@ export class GnomeFocusManager {
   update_desaturate_percentage = (percentage: number): void => {
     const enabled = this.settings.is_desaturate_enabled;
     for (const window_actor of global.get_window_actors()) {
-      if (this.is_ignored(window_actor)) {
+      if (window_actor === this.active_window_actor || this.is_ignored(window_actor)) {
         continue;
       }
 
