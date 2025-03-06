@@ -91,32 +91,44 @@ export default class GnomeFocusPreferences extends ExtensionPreferences {
 
     widget.attach(blur_toggle, 1, 7, 1, 1);
 
-    const blur_sigma_label = new Gtk.Label({
-      label: 'Blur Sigma',
+    const desaturate_label = new Gtk.Label({
+      label: 'Desaturate Inactive Windows',
       halign: Gtk.Align.START,
       visible: true
     });
 
-    const blur_sigma_entry = new Gtk.Entry({
-      inputPurpose: Gtk.InputPurpose.NUMBER,
+    const desaturate_toggle = new Gtk.Switch({
+      visible: true,
+      active: settings.is_desaturate_enabled
+    });
+
+    desaturate_toggle.connect('notify::active', () => {
+      settings.set_is_desaturate_enabled(desaturate_toggle.get_active());
+      Gio.Settings.sync();
+    });
+
+    widget.attach(desaturate_label, 0, 8, 1, 1);
+    widget.attach(desaturate_toggle, 1, 8, 1, 1);
+
+    const desaturate_percentage_label = new Gtk.Label({
+      label: 'Desaturate Percentage',
+      halign: Gtk.Align.START,
       visible: true
     });
 
-    blur_sigma_entry.set_text(settings.blur_sigma.toString());
-    blur_sigma_entry.connect('changed', function () {
-      if (!blur_sigma_entry.text) {
-        return;
-      }
-
-      const value = parseInt(blur_sigma_entry.text);
-      if (!isNaN(value) && value >= 0) {
-        settings.set_blur_sigma(value);
+    const desaturate_percentage_scale = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, 0, 100, 1);
+    desaturate_percentage_scale.set_visible(true);
+    desaturate_percentage_scale.set_value(settings.desaturate_percentage);
+    desaturate_percentage_scale.connect('change-value', () => {
+      const value = desaturate_percentage_scale.get_value();
+      if (value <= 100 && value >= 0) {
+        settings.set_desaturate_percentage(value);
         Gio.Settings.sync();
       }
     });
 
-    widget.attach(blur_sigma_label, 0, 8, 1, 1);
-    widget.attach(blur_sigma_entry, 1, 8, 1, 1);
+    widget.attach(desaturate_percentage_label, 0, 9, 1, 1);
+    widget.attach(desaturate_percentage_scale, 0, 10, 2, 1);
 
     return widget;
   }
