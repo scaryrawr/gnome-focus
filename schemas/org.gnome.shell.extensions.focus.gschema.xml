@@ -13,10 +13,6 @@
 			<default>100</default>
 			<summary>Opacity of focused window 0-100</summary>
 		</key>
-		<key name="blur-sigma" type="u">
-			<default>5</default>
-			<summary>Blur sigma to be applied</summary>
-		</key>
 		<key name="is-background-blur" type="b">
 			<default>false</default>
 			<summary>Have blurred backgrounds</summary>

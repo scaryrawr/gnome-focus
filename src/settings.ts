@@ -4,7 +4,6 @@ type SettingsChangeEvents = {
   'focus-opacity': number;
   'special-opacity': number;
   'inactive-opacity': number;
-  'blur-sigma': number;
   'is-background-blur': boolean;
   'is-desaturate-enabled': boolean;
   'desaturate-percentage': number;
@@ -27,7 +26,6 @@ export class FocusSettings {
     'focus-opacity': [],
     'inactive-opacity': [],
     'special-opacity': [],
-    'blur-sigma': [],
     'is-background-blur': [],
     'desaturate-percentage': [],
     'is-desaturate-enabled': []
@@ -61,14 +59,6 @@ export class FocusSettings {
     this.settings.set_uint('inactive-opacity', val);
   }
 
-  get blur_sigma(): number {
-    return this.settings.get_uint('blur-sigma');
-  }
-
-  set_blur_sigma(val: number): void {
-    this.settings.set_uint('blur-sigma', val);
-  }
-
   get is_background_blur(): boolean {
     return this.settings.get_boolean('is-background-blur');
   }
@@ -100,9 +90,6 @@ export class FocusSettings {
           case 'focus-opacity':
           case 'inactive-opacity':
           case 'special-opacity':
-          case 'blur-sigma':
-            this.emit(key, this.settings.get_uint(key));
-            break;
           case 'is-background-blur':
             this.emit(key, this.settings.get_boolean(key));
             break;
