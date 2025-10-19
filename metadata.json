@@ -1,7 +1,7 @@
 {
   "uuid": "focus@scaryrawr.github.io",
   "name": "Focus",
-  "shell-version": ["45", "46", "47", "48"],
+  "shell-version": ["45", "46", "47", "48", "49"],
   "url": "https://github.com/scaryrawr/gnome-focus",
   "settings-schema": "org.gnome.shell.extensions.focus"
 }
