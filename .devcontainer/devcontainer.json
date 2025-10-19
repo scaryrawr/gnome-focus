@@ -1,6 +1,6 @@
 {
   "name": "Gnome Focus",
-  "image": "ubuntu:noble",
+  "image": "mcr.microsoft.com/devcontainers/base:noble",
   "features": {
     "ghcr.io/devcontainers/features/common-utils:2": {},
     "ghcr.io/devcontainers/features/node:1": {},
