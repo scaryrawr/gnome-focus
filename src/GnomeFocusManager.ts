@@ -276,6 +276,25 @@ export class GnomeFocusManager {
     }
   };
 
+  suspend_effects = (): void => {
+    this.clear_active_window(false);
+
+    for (const window_actor of global.get_window_actors()) {
+      if (window_actor.is_destroyed() || this.is_ignored(window_actor)) {
+        continue;
+      }
+
+      const window = window_actor.get_meta_window();
+      if (!window || !is_valid_window_type(window)) {
+        continue;
+      }
+
+      GnomeFocusManager.set_opacity(window_actor, 100);
+      this.set_blur(window_actor, false);
+      this.set_desaturate(window_actor, false, this.settings.desaturate_percentage);
+    }
+  };
+
   disable(): void {
     this.settings.clear();
     this.clear_active_window(false);
