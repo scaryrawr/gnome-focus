@@ -14,6 +14,12 @@ const DESATURATE_EFFECT_NAME = 'gnome-focus-desaturate';
 
 /** Window Types that should be considered for focus changes */
 const WINDOW_TYPES = [Meta.WindowType.NORMAL];
+
+function is_desktop_icons_window(window: Meta.Window): boolean {
+  const title = window.get_title();
+  return title?.startsWith('Desktop Icons ') ?? false;
+}
+
 export function is_valid_window_type(window: Meta.Window): boolean {
   return WINDOW_TYPES.includes(window.get_window_type());
 }
@@ -32,6 +38,11 @@ export class GnomeFocusManager {
     settings.on('is-background-blur', this.update_is_background_blur);
     settings.on('is-desaturate-enabled', this.update_is_desaturate_enabled);
     settings.on('desaturate-percentage', this.update_desaturate_percentage);
+  }
+
+  static get_opacity_targets(window_actor: Meta.WindowActor): Clutter.Actor[] {
+    const targets = window_actor.get_children();
+    return targets.length > 0 ? targets : [window_actor];
   }
 
   is_special = (window_actor: Meta.WindowActor): boolean => {
@@ -57,11 +68,15 @@ export class GnomeFocusManager {
       return true;
     }
 
+    const window = window_actor.get_meta_window();
+    if (window && is_desktop_icons_window(window)) {
+      return true;
+    }
+
     if (!this.ignore_inactive) {
       return false;
     }
 
-    const window = window_actor.get_meta_window();
     return (
       !!window &&
       (!is_valid_window_type(window) ||
@@ -80,11 +95,9 @@ export class GnomeFocusManager {
     }
 
     const true_opacity = (DEFAULT_OPACITY * percentage) / 100;
-    for (const actor of window_actor.get_children()) {
+    for (const actor of GnomeFocusManager.get_opacity_targets(window_actor)) {
       actor.set_opacity(true_opacity);
     }
-
-    window_actor.set_opacity(true_opacity);
   }
 
   set_blur(window_actor: Meta.WindowActor, blur: boolean): void {

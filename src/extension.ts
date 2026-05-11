@@ -7,17 +7,20 @@ import { GnomeFocusManager, is_valid_window_type } from './GnomeFocusManager.js'
 import { get_settings } from './settings.js';
 import { Timeouts } from './timeout.js';
 
-type ExtendedWindow = Meta.Window & {
-  _focus_extension_signal?: number;
-};
-
 let create_signal: number | undefined;
+
+let focus_signal: number | undefined;
 
 let extension_instance: GnomeFocusManager | undefined;
 
 let timeout_manager: Timeouts | undefined;
 
 function get_window_actor(window: Meta.Window) {
+  const actor = window.get_compositor_private() as Meta.WindowActor | null;
+  if (actor && !actor.is_destroyed()) {
+    return actor;
+  }
+
   for (const actor of global.get_window_actors()) {
     if (!actor.is_destroyed() && actor.get_meta_window() === window) {
       return actor;
@@ -27,7 +30,12 @@ function get_window_actor(window: Meta.Window) {
   return undefined;
 }
 
-function focus_changed(window: Meta.Window) {
+function focus_changed() {
+  const window = global.display.focus_window;
+  if (!window) {
+    return;
+  }
+
   const actor = get_window_actor(window);
   if (actor) {
     extension_instance?.set_active_window_actor(actor);
@@ -42,16 +50,16 @@ export default class GnomeFocus extends Extension {
       load_config<string[]>(this.metadata, 'ignore_focus.json')
     );
 
-    create_signal = global.display.connect('window-created', function (_, win: ExtendedWindow) {
+    focus_signal = global.display.connect('notify::focus-window', focus_changed);
+
+    create_signal = global.display.connect('window-created', function (_, win: Meta.Window) {
       if (!is_valid_window_type(win)) {
         return;
       }
 
-      win._focus_extension_signal = win.connect('focus', focus_changed);
-
       timeout_manager ??= new Timeouts();
 
-      // In Wayland, when we have a new window, we need ot have a slight delay before
+      // In Wayland, when we have a new window, we need a slight delay before
       // attempting to set the transparency.
       timeout_manager.add(() => {
         if (!win) {
@@ -70,7 +78,7 @@ export default class GnomeFocus extends Extension {
             return false;
           }
 
-          if (win.has_focus()) {
+          if (global.display.focus_window === win) {
             extension_instance.set_active_window_actor(actor);
           } else {
             extension_instance.update_inactive_window_actor(actor);
@@ -88,21 +96,23 @@ export default class GnomeFocus extends Extension {
         continue;
       }
 
-      const win = actor.get_meta_window() as ExtendedWindow;
+      const win = actor.get_meta_window();
+      if (!win) {
+        continue;
+      }
+
       if (!is_valid_window_type(win)) {
         continue;
       }
 
-      if (undefined === win._focus_extension_signal) {
-        win._focus_extension_signal = win.connect('focus', focus_changed);
-      }
-
-      if (win.has_focus()) {
+      if (global.display.focus_window === win) {
         extension_instance.set_active_window_actor(actor);
       } else {
         extension_instance.update_inactive_window_actor(actor);
       }
     }
+
+    focus_changed();
   }
 
   disable() {
@@ -111,20 +121,13 @@ export default class GnomeFocus extends Extension {
       create_signal = undefined;
     }
 
+    if (undefined !== focus_signal) {
+      global.display.disconnect(focus_signal);
+      focus_signal = undefined;
+    }
+
     timeout_manager?.clear();
     timeout_manager = undefined;
-
-    for (const actor of global.get_window_actors()) {
-      if (actor.is_destroyed()) {
-        continue;
-      }
-
-      const win: ExtendedWindow | null = actor.get_meta_window();
-      if (win?._focus_extension_signal) {
-        win.disconnect(win._focus_extension_signal);
-        delete win._focus_extension_signal;
-      }
-    }
 
     if (undefined !== extension_instance) {
       extension_instance.disable();
