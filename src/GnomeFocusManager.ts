@@ -247,6 +247,10 @@ export class GnomeFocusManager {
 
   refresh = (): void => {
     const focused_window = global.display.focus_window;
+    if (!focused_window || !is_valid_window_type(focused_window)) {
+      return;
+    }
+
     let focused_actor: Meta.WindowActor | undefined;
 
     for (const window_actor of global.get_window_actors()) {
@@ -269,27 +273,6 @@ export class GnomeFocusManager {
 
     if (focused_actor) {
       this.set_active_window_actor(focused_actor);
-    } else {
-      this.clear_active_window();
-    }
-  };
-
-  suspend_effects = (): void => {
-    this.clear_active_window(false);
-
-    for (const window_actor of global.get_window_actors()) {
-      if (window_actor.is_destroyed()) {
-        continue;
-      }
-
-      const window = window_actor.get_meta_window();
-      if (!window || !is_valid_window_type(window) || this.is_ignored(window_actor)) {
-        continue;
-      }
-
-      GnomeFocusManager.set_opacity(window_actor, 100);
-      this.set_blur(window_actor, false);
-      this.set_desaturate(window_actor, false, this.settings.desaturate_percentage);
     }
   };
 
