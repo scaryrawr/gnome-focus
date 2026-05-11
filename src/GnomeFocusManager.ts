@@ -45,6 +45,23 @@ export class GnomeFocusManager {
     return targets.length > 0 ? targets : [window_actor];
   }
 
+  clear_active_window = (set_inactive = true): void => {
+    if (!this.active_window_actor) {
+      return;
+    }
+
+    if (set_inactive) {
+      this.update_inactive_window_actor(this.active_window_actor);
+    }
+
+    if (this.active_destroy_signal != null) {
+      this.active_window_actor.disconnect(this.active_destroy_signal);
+      delete this.active_destroy_signal;
+    }
+
+    delete this.active_window_actor;
+  };
+
   is_special = (window_actor: Meta.WindowActor): boolean => {
     if (!this.special_focus || window_actor.is_destroyed()) {
       return false;
@@ -146,13 +163,7 @@ export class GnomeFocusManager {
       return;
     }
 
-    if (this.active_window_actor) {
-      this.update_inactive_window_actor(this.active_window_actor);
-      if (this.active_destroy_signal != null) {
-        this.active_window_actor.disconnect(this.active_destroy_signal);
-        delete this.active_destroy_signal;
-      }
-    }
+    this.clear_active_window();
 
     if (window_actor.is_destroyed() || this.is_ignored(window_actor)) {
       delete this.active_window_actor;
@@ -234,8 +245,58 @@ export class GnomeFocusManager {
     }
   };
 
+  refresh = (): void => {
+    const focused_window = global.display.focus_window;
+    let focused_actor: Meta.WindowActor | undefined;
+
+    for (const window_actor of global.get_window_actors()) {
+      if (window_actor.is_destroyed()) {
+        continue;
+      }
+
+      const window = window_actor.get_meta_window();
+      if (!window || !is_valid_window_type(window) || this.is_ignored(window_actor)) {
+        continue;
+      }
+
+      if (focused_window === window) {
+        focused_actor = window_actor;
+        continue;
+      }
+
+      this.update_inactive_window_actor(window_actor);
+    }
+
+    if (focused_actor) {
+      this.set_active_window_actor(focused_actor);
+    } else {
+      this.clear_active_window();
+    }
+  };
+
+  suspend_effects = (): void => {
+    this.clear_active_window(false);
+
+    for (const window_actor of global.get_window_actors()) {
+      if (window_actor.is_destroyed()) {
+        continue;
+      }
+
+      const window = window_actor.get_meta_window();
+      if (!window || !is_valid_window_type(window) || this.is_ignored(window_actor)) {
+        continue;
+      }
+
+      GnomeFocusManager.set_opacity(window_actor, 100);
+      this.set_blur(window_actor, false);
+      this.set_desaturate(window_actor, false, this.settings.desaturate_percentage);
+    }
+  };
+
   disable(): void {
     this.settings.clear();
+    this.clear_active_window(false);
+
     for (const window_actor of global.get_window_actors()) {
       GnomeFocusManager.set_opacity(window_actor, 100);
       window_actor.remove_effect_by_name(BLUR_EFFECT_NAME);
