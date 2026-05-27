@@ -1,37 +1,51 @@
-import Meta from 'gi://Meta';
+import Gio from 'gi://Gio';
+import GLib from 'gi://GLib';
 import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
 
 import { load_config } from './config.js';
 import { GnomeFocusManager, is_valid_window_type } from './GnomeFocusManager.js';
 
 import { get_settings } from './settings.js';
-import { Timeouts } from './timeout.js';
 
-type ExtendedWindow = Meta.Window & {
-  _focus_extension_signal?: number;
-};
-
-let create_signal: number | undefined;
+let focus_signal: number | undefined;
+let background_signal: number | undefined;
+let background_dark_signal: number | undefined;
+let refresh_timeout: number | undefined;
 
 let extension_instance: GnomeFocusManager | undefined;
+let background_settings: Gio.Settings | undefined;
 
-let timeout_manager: Timeouts | undefined;
-
-function get_window_actor(window: Meta.Window) {
-  for (const actor of global.get_window_actors()) {
-    if (!actor.is_destroyed() && actor.get_meta_window() === window) {
-      return actor;
-    }
+function clear_refresh_timeout() {
+  if (refresh_timeout === undefined) {
+    return;
   }
 
-  return undefined;
+  GLib.source_remove(refresh_timeout);
+  refresh_timeout = undefined;
 }
 
-function focus_changed(window: Meta.Window) {
-  const actor = get_window_actor(window);
-  if (actor) {
-    extension_instance?.set_active_window_actor(actor);
+function schedule_refresh(delay: number) {
+  clear_refresh_timeout();
+
+  refresh_timeout = GLib.timeout_add(GLib.PRIORITY_DEFAULT, delay, () => {
+    refresh_timeout = undefined;
+    extension_instance?.refresh();
+    return GLib.SOURCE_REMOVE;
+  });
+}
+
+function background_changed() {
+  extension_instance?.suspend_effects();
+  schedule_refresh(600);
+}
+
+function focus_changed() {
+  const window = global.display.focus_window;
+  if (!window || !is_valid_window_type(window)) {
+    return;
   }
+
+  extension_instance?.refresh();
 }
 
 export default class GnomeFocus extends Extension {
@@ -42,89 +56,50 @@ export default class GnomeFocus extends Extension {
       load_config<string[]>(this.metadata, 'ignore_focus.json')
     );
 
-    create_signal = global.display.connect('window-created', function (_, win: ExtendedWindow) {
-      if (!is_valid_window_type(win)) {
-        return;
-      }
-
-      win._focus_extension_signal = win.connect('focus', focus_changed);
-
-      timeout_manager ??= new Timeouts();
-
-      // In Wayland, when we have a new window, we need ot have a slight delay before
-      // attempting to set the transparency.
-      timeout_manager.add(() => {
-        if (!win) {
-          return false;
-        }
-
-        if (undefined === extension_instance) {
-          return false;
-        }
-
-        // We could have something go wrong, but always want to set false,
-        // otherwise we end up being called more than once
-        try {
-          const actor = get_window_actor(win);
-          if (undefined === actor || actor.is_destroyed()) {
-            return false;
-          }
-
-          if (win.has_focus()) {
-            extension_instance.set_active_window_actor(actor);
-          } else {
-            extension_instance.update_inactive_window_actor(actor);
-          }
-        } catch (err) {
-          console.error(`Error on new window: ${err}`);
-        }
-
-        return false;
-      }, 350);
-    });
+    focus_signal = global.display.connect('notify::focus-window', focus_changed);
+    background_settings = new Gio.Settings({ schema_id: 'org.gnome.desktop.background' });
+    background_signal = background_settings.connect('changed::picture-uri', background_changed);
+    background_dark_signal = background_settings.connect('changed::picture-uri-dark', background_changed);
 
     for (const actor of global.get_window_actors()) {
       if (actor.is_destroyed()) {
         continue;
       }
 
-      const win = actor.get_meta_window() as ExtendedWindow;
+      const win = actor.get_meta_window();
+      if (!win) {
+        continue;
+      }
+
       if (!is_valid_window_type(win)) {
         continue;
       }
 
-      if (undefined === win._focus_extension_signal) {
-        win._focus_extension_signal = win.connect('focus', focus_changed);
-      }
-
-      if (win.has_focus()) {
-        extension_instance.set_active_window_actor(actor);
-      } else {
-        extension_instance.update_inactive_window_actor(actor);
-      }
+      extension_instance.update_inactive_window_actor(actor);
     }
+
+    extension_instance.refresh();
   }
 
   disable() {
-    if (undefined !== create_signal) {
-      global.display.disconnect(create_signal);
-      create_signal = undefined;
+    if (undefined !== focus_signal) {
+      global.display.disconnect(focus_signal);
+      focus_signal = undefined;
     }
 
-    timeout_manager?.clear();
-    timeout_manager = undefined;
+    clear_refresh_timeout();
 
-    for (const actor of global.get_window_actors()) {
-      if (actor.is_destroyed()) {
-        continue;
-      }
-
-      const win: ExtendedWindow | null = actor.get_meta_window();
-      if (win?._focus_extension_signal) {
-        win.disconnect(win._focus_extension_signal);
-        delete win._focus_extension_signal;
-      }
+    if (background_settings && background_signal !== undefined) {
+      background_settings.disconnect(background_signal);
+      background_signal = undefined;
     }
+
+    if (background_settings && background_dark_signal !== undefined) {
+      background_settings.disconnect(background_dark_signal);
+      background_dark_signal = undefined;
+    }
+
+    background_settings = undefined;
 
     if (undefined !== extension_instance) {
       extension_instance.disable();
