@@ -2,6 +2,7 @@ import Meta from 'gi://Meta';
 import Clutter from 'gi://Clutter';
 
 import { FocusSettings } from './settings.js';
+import { signal_tracked } from './signals.js';
 
 /** 100% opacity value */
 const DEFAULT_OPACITY = 255;
@@ -26,7 +27,6 @@ export function is_valid_window_type(window: Meta.Window): boolean {
 
 export class GnomeFocusManager {
   active_window_actor: Meta.WindowActor | undefined;
-  active_destroy_signal: number | undefined;
   constructor(
     readonly settings: FocusSettings,
     readonly special_focus: string[] | undefined,
@@ -54,11 +54,7 @@ export class GnomeFocusManager {
       this.update_inactive_window_actor(this.active_window_actor);
     }
 
-    if (this.active_destroy_signal != null) {
-      this.active_window_actor.disconnect(this.active_destroy_signal);
-      delete this.active_destroy_signal;
-    }
-
+    signal_tracked(this.active_window_actor).disconnectObject(this);
     delete this.active_window_actor;
   };
 
@@ -179,12 +175,15 @@ export class GnomeFocusManager {
     this.set_blur(this.active_window_actor, false);
     this.set_desaturate(this.active_window_actor, false, this.settings.desaturate_percentage);
 
-    this.active_destroy_signal = this.active_window_actor.connect('destroy', actor => {
-      if (this.active_window_actor === actor) {
-        delete this.active_window_actor;
-        delete this.active_destroy_signal;
-      }
-    });
+    signal_tracked(this.active_window_actor).connectObject(
+      'destroy',
+      (actor: Meta.WindowActor) => {
+        if (this.active_window_actor === actor) {
+          delete this.active_window_actor;
+        }
+      },
+      this
+    );
   };
 
   update_special_focused_window_opacity = (value: number): void => {

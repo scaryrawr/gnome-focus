@@ -6,14 +6,13 @@ import { load_config } from './config.js';
 import { GnomeFocusManager, is_valid_window_type } from './GnomeFocusManager.js';
 
 import { get_settings } from './settings.js';
+import { signal_tracked } from './signals.js';
 
-let focus_signal: number | undefined;
-let background_signal: number | undefined;
-let background_dark_signal: number | undefined;
 let refresh_timeout: number | undefined;
 
 let extension_instance: GnomeFocusManager | undefined;
 let background_settings: Gio.Settings | undefined;
+let enable_generation = 0;
 
 function clear_refresh_timeout() {
   if (refresh_timeout === undefined) {
@@ -49,17 +48,31 @@ function focus_changed() {
 }
 
 export default class GnomeFocus extends Extension {
-  enable() {
+  async enable() {
+    const generation = ++enable_generation;
+
+    const special_focus = await load_config<string[]>(this.metadata, 'special_focus.json');
+    const ignore_focus = await load_config<string[]>(this.metadata, 'ignore_focus.json');
+
+    if (generation !== enable_generation) {
+      return;
+    }
+
     extension_instance = new GnomeFocusManager(
       get_settings(this.getSettings()),
-      load_config<string[]>(this.metadata, 'special_focus.json'),
-      load_config<string[]>(this.metadata, 'ignore_focus.json')
+      special_focus,
+      ignore_focus
     );
 
-    focus_signal = global.display.connect('notify::focus-window', focus_changed);
+    signal_tracked(global.display).connectObject('notify::focus-window', focus_changed, this);
     background_settings = new Gio.Settings({ schema_id: 'org.gnome.desktop.background' });
-    background_signal = background_settings.connect('changed::picture-uri', background_changed);
-    background_dark_signal = background_settings.connect('changed::picture-uri-dark', background_changed);
+    signal_tracked(background_settings).connectObject(
+      'changed::picture-uri',
+      background_changed,
+      'changed::picture-uri-dark',
+      background_changed,
+      this
+    );
 
     for (const actor of global.get_window_actors()) {
       if (actor.is_destroyed()) {
@@ -82,23 +95,14 @@ export default class GnomeFocus extends Extension {
   }
 
   disable() {
-    if (undefined !== focus_signal) {
-      global.display.disconnect(focus_signal);
-      focus_signal = undefined;
-    }
+    enable_generation++;
 
+    signal_tracked(global.display).disconnectObject(this);
     clear_refresh_timeout();
 
-    if (background_settings && background_signal !== undefined) {
-      background_settings.disconnect(background_signal);
-      background_signal = undefined;
+    if (background_settings) {
+      signal_tracked(background_settings).disconnectObject(this);
     }
-
-    if (background_settings && background_dark_signal !== undefined) {
-      background_settings.disconnect(background_dark_signal);
-      background_dark_signal = undefined;
-    }
-
     background_settings = undefined;
 
     if (undefined !== extension_instance) {
