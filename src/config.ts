@@ -4,20 +4,7 @@ import GLib from 'gi://GLib';
 
 type ExtensionMetadata = Extension['metadata'];
 
-let file_operations_promisified = false;
-const configuration_dir_promises = new WeakMap<Gio.Cancellable, Promise<string | undefined>>();
-
 type ConfigName = 'special_focus.json' | 'ignore_focus.json';
-
-function ensure_async_file_operations(): void {
-  if (file_operations_promisified) {
-    return;
-  }
-
-  Gio._promisify(Gio.File.prototype, 'query_info_async');
-  Gio._promisify(Gio.File.prototype, 'load_contents_async');
-  file_operations_promisified = true;
-}
 
 function is_io_error(error: unknown, code: number): boolean {
   return error instanceof GLib.Error && error.matches(Gio.IOErrorEnum, code);
@@ -54,15 +41,6 @@ async function resolve_configuration_dir(
   }
 }
 
-function get_configuration_dir(metadata: ExtensionMetadata, cancellable: Gio.Cancellable): Promise<string | undefined> {
-  let configuration_dir_promise = configuration_dir_promises.get(cancellable);
-  if (!configuration_dir_promise) {
-    configuration_dir_promise = resolve_configuration_dir(metadata, cancellable);
-    configuration_dir_promises.set(cancellable, configuration_dir_promise);
-  }
-  return configuration_dir_promise;
-}
-
 function parse_config(content: Uint8Array, file_path: string): string[] | undefined {
   let parsed: unknown;
   try {
@@ -88,9 +66,7 @@ export async function load_config(
   name: ConfigName,
   cancellable: Gio.Cancellable
 ): Promise<string[] | undefined> {
-  ensure_async_file_operations();
-
-  const config_dir = await get_configuration_dir(metadata, cancellable);
+  const config_dir = await resolve_configuration_dir(metadata, cancellable);
   if (!config_dir || cancellable.is_cancelled()) {
     return undefined;
   }
