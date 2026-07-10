@@ -137,9 +137,7 @@ export class FocusSettings {
     }
 
     for (const key in this.listeners) {
-      if (this.listeners[key as keyof SettingsChangeEvents].length > 0) {
-        return;
-      }
+      this.listeners[key as keyof SettingsChangeEvents].length = 0;
     }
   }
 }

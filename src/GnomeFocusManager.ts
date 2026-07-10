@@ -244,54 +244,37 @@ export class GnomeFocusManager {
     }
   };
 
-  refresh = (): void => {
+  /** Reconciles ready window actors with Mutter's current focus state. */
+  refresh = (pending_window_actors?: ReadonlySet<Meta.WindowActor>): void => {
     const focused_window = global.display.focus_window;
     if (!focused_window || !is_valid_window_type(focused_window)) {
       return;
     }
 
-    let focused_actor: Meta.WindowActor | undefined;
+    const window_actors = global.get_window_actors();
+    const focused_actor = window_actors.find(
+      window_actor =>
+        !window_actor.is_destroyed() &&
+        !pending_window_actors?.has(window_actor) &&
+        window_actor.get_meta_window() === focused_window &&
+        !this.is_ignored(window_actor)
+    );
 
-    for (const window_actor of global.get_window_actors()) {
-      if (window_actor.is_destroyed()) {
-        continue;
-      }
+    // Focus can change before Mutter draws a new actor. Preserve the current
+    // state until ::first-frame rather than partially applying a transition.
+    if (!focused_actor) {
+      return;
+    }
 
-      const window = window_actor.get_meta_window();
-      if (!window || !is_valid_window_type(window) || this.is_ignored(window_actor)) {
-        continue;
-      }
-
-      if (focused_window === window) {
-        focused_actor = window_actor;
+    for (const window_actor of window_actors) {
+      if (window_actor === focused_actor || pending_window_actors?.has(window_actor)) {
         continue;
       }
 
       this.update_inactive_window_actor(window_actor);
     }
 
-    if (focused_actor) {
-      this.set_active_window_actor(focused_actor);
-    }
-  };
-
-  suspend_effects = (): void => {
-    this.clear_active_window(false);
-
-    for (const window_actor of global.get_window_actors()) {
-      if (window_actor.is_destroyed() || this.is_ignored(window_actor)) {
-        continue;
-      }
-
-      const window = window_actor.get_meta_window();
-      if (!window || !is_valid_window_type(window)) {
-        continue;
-      }
-
-      GnomeFocusManager.set_opacity(window_actor, 100);
-      this.set_blur(window_actor, false);
-      this.set_desaturate(window_actor, false, this.settings.desaturate_percentage);
-    }
+    this.set_active_window_actor(focused_actor);
   };
 
   disable(): void {
@@ -299,6 +282,10 @@ export class GnomeFocusManager {
     this.clear_active_window(false);
 
     for (const window_actor of global.get_window_actors()) {
+      if (window_actor.is_destroyed()) {
+        continue;
+      }
+
       GnomeFocusManager.set_opacity(window_actor, 100);
       window_actor.remove_effect_by_name(BLUR_EFFECT_NAME);
       window_actor.remove_effect_by_name(DESATURATE_EFFECT_NAME);
