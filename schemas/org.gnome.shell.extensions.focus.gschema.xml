@@ -11,6 +11,11 @@
 			<range min="0" max="100"/>
 			<summary>Opacity of focused window if in special focus list 0-100</summary>
 		</key>
+		<key name="special-focus-windows" type="as">
+			<default>[]</default>
+			<summary>Windows that retain transparency while focused</summary>
+			<description>Exact case-sensitive matches for WM_CLASS, WM_CLASS instance, or window title.</description>
+		</key>
 		<key name="focus-opacity" type="u">
 			<default>100</default>
 			<range min="0" max="100"/>

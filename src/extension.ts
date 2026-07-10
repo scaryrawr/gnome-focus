@@ -60,6 +60,7 @@ export default class GnomeFocus extends Extension {
     this.config_cancellable = undefined;
 
     const settings = get_settings(this.getSettings());
+    settings.normalize_special_focus_windows();
     settings.normalize_excluded_windows();
     const pending_window_actors = new Set<Meta.WindowActor>();
     this.pending_window_actors = pending_window_actors;

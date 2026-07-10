@@ -3,7 +3,7 @@ import Gtk from 'gi://Gtk';
 
 import { ExtensionPreferences } from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
-import { FocusSettings, get_settings, normalize_excluded_window_criterion } from './settings.js';
+import { FocusSettings, get_settings, normalize_window_criterion } from './settings.js';
 
 type PercentageRowOptions = {
   title: string;
@@ -62,7 +62,7 @@ function add_appearance_page(window: Adw.PreferencesWindow, settings: FocusSetti
   opacity_group.add(
     create_percentage_row({
       title: 'Special focus windows',
-      subtitle: 'Focused opacity for matches from special_focus.json',
+      subtitle: 'Focused opacity for windows listed under Special Focus Windows',
       value: settings.special_focus_opacity,
       step: 5,
       set_value: value => settings.set_special_focus_opacity(value)
@@ -106,16 +106,27 @@ function add_appearance_page(window: Adw.PreferencesWindow, settings: FocusSetti
   window.add(page);
 }
 
-/** Adds one removable exact-match criterion row. */
-function add_exclusion_row(
+type WindowListPageOptions = {
+  title: string;
+  icon_name: string;
+  description: string;
+  entry_title: string;
+  row_subtitle: string;
+  get_criteria: () => string[];
+  set_criteria: (criteria: readonly string[]) => void;
+  normalize_criteria: () => string[];
+};
+
+/** Adds one removable exact-match window criterion row. */
+function add_window_criterion_row(
   group: Adw.PreferencesGroup,
-  settings: FocusSettings,
   criterion: string,
+  options: WindowListPageOptions,
   on_removed: () => void
 ): void {
   const row = new Adw.ActionRow({
     title: criterion,
-    subtitle: 'Matches WM_CLASS, WM_CLASS instance, or window title',
+    subtitle: options.row_subtitle,
     subtitle_selectable: true,
     use_markup: false
   });
@@ -126,7 +137,7 @@ function add_exclusion_row(
   });
   remove_button.add_css_class('flat');
   remove_button.connect('clicked', () => {
-    settings.set_excluded_windows(settings.excluded_windows.filter(value => value !== criterion));
+    options.set_criteria(options.get_criteria().filter(value => value !== criterion));
     group.remove(row);
     on_removed();
   });
@@ -135,19 +146,18 @@ function add_exclusion_row(
   group.add(row);
 }
 
-/** Adds the editor for GSettings-backed exclusion criteria. */
-function add_exclusions_page(window: Adw.PreferencesWindow, settings: FocusSettings): void {
+/** Adds a preferences page for one GSettings-backed exact-match window list. */
+function add_window_list_page(window: Adw.PreferencesWindow, options: WindowListPageOptions): void {
   const page = new Adw.PreferencesPage({
-    title: 'Excluded Windows',
-    icon_name: 'action-unavailable-symbolic'
+    title: options.title,
+    icon_name: options.icon_name
   });
   const group = new Adw.PreferencesGroup({
     title: 'Exact Matches',
-    description:
-      'Excluded windows keep their normal appearance. Matching is exact and case-sensitive against WM_CLASS, its instance, or the full window title.'
+    description: options.description
   });
   const entry_row = new Adw.EntryRow({
-    title: 'Add WM_CLASS, instance, or title'
+    title: options.entry_title
   });
   const add_button = new Gtk.Button({
     icon_name: 'list-add-symbolic',
@@ -159,19 +169,19 @@ function add_exclusions_page(window: Adw.PreferencesWindow, settings: FocusSetti
   group.add(entry_row);
 
   const update_add_button = (): void => {
-    const criterion = normalize_excluded_window_criterion(entry_row.get_text());
-    const is_duplicate = criterion ? settings.excluded_windows.includes(criterion) : false;
+    const criterion = normalize_window_criterion(entry_row.get_text());
+    const is_duplicate = criterion ? options.get_criteria().includes(criterion) : false;
     add_button.set_sensitive(!!criterion && !is_duplicate);
     add_button.set_tooltip_text(is_duplicate ? 'Criterion already exists' : 'Add criterion');
   };
   const add_criterion = (): void => {
-    const criterion = normalize_excluded_window_criterion(entry_row.get_text());
-    if (!criterion || settings.excluded_windows.includes(criterion)) {
+    const criterion = normalize_window_criterion(entry_row.get_text());
+    if (!criterion || options.get_criteria().includes(criterion)) {
       return;
     }
 
-    settings.set_excluded_windows([...settings.excluded_windows, criterion]);
-    add_exclusion_row(group, settings, criterion, update_add_button);
+    options.set_criteria([...options.get_criteria(), criterion]);
+    add_window_criterion_row(group, criterion, options, update_add_button);
     entry_row.set_text('');
   };
 
@@ -180,12 +190,42 @@ function add_exclusions_page(window: Adw.PreferencesWindow, settings: FocusSetti
   add_button.connect('clicked', add_criterion);
   update_add_button();
 
-  for (const criterion of settings.normalize_excluded_windows()) {
-    add_exclusion_row(group, settings, criterion, update_add_button);
+  for (const criterion of options.normalize_criteria()) {
+    add_window_criterion_row(group, criterion, options, update_add_button);
   }
 
   page.add(group);
   window.add(page);
+}
+
+/** Adds the editor for windows that remain transparent while focused. */
+function add_special_focus_page(window: Adw.PreferencesWindow, settings: FocusSettings): void {
+  add_window_list_page(window, {
+    title: 'Special Focus Windows',
+    icon_name: 'starred-symbolic',
+    description:
+      'Special focus windows use the special focused opacity while active. Matching is exact and case-sensitive against WM_CLASS, its instance, or the full window title.',
+    entry_title: 'Add WM_CLASS, instance, or title',
+    row_subtitle: 'Uses special focused opacity when active',
+    get_criteria: () => settings.special_focus_windows,
+    set_criteria: criteria => settings.set_special_focus_windows(criteria),
+    normalize_criteria: () => settings.normalize_special_focus_windows()
+  });
+}
+
+/** Adds the editor for windows excluded from all focus effects. */
+function add_exclusions_page(window: Adw.PreferencesWindow, settings: FocusSettings): void {
+  add_window_list_page(window, {
+    title: 'Excluded Windows',
+    icon_name: 'action-unavailable-symbolic',
+    description:
+      'Excluded windows keep their normal appearance. Matching is exact and case-sensitive against WM_CLASS, its instance, or the full window title.',
+    entry_title: 'Add WM_CLASS, instance, or title',
+    row_subtitle: 'Matches WM_CLASS, WM_CLASS instance, or window title',
+    get_criteria: () => settings.excluded_windows,
+    set_criteria: criteria => settings.set_excluded_windows(criteria),
+    normalize_criteria: () => settings.normalize_excluded_windows()
+  });
 }
 
 export default class GnomeFocusPreferences extends ExtensionPreferences {
@@ -193,6 +233,7 @@ export default class GnomeFocusPreferences extends ExtensionPreferences {
     const settings = get_settings(this.getSettings());
     window.set_search_enabled(true);
     add_appearance_page(window, settings);
+    add_special_focus_page(window, settings);
     add_exclusions_page(window, settings);
   }
 }

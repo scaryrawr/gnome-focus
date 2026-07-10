@@ -9,6 +9,7 @@ type SettingsChangeEvents = {
   'is-background-blur': boolean;
   'is-desaturate-enabled': boolean;
   'desaturate-percentage': number;
+  'special-focus-windows': string[];
   'excluded-windows': string[];
 };
 
@@ -22,19 +23,19 @@ type ListenerMap<Type> = {
 
 type SettingsListenerMap = ListenerMap<SettingsChangeEvents>;
 
-/** Returns one trimmed, non-empty exact-match criterion. */
-export function normalize_excluded_window_criterion(criterion: string): string | undefined {
+/** Returns one trimmed, non-empty exact-match window criterion. */
+export function normalize_window_criterion(criterion: string): string | undefined {
   const normalized = criterion.trim();
   return normalized.length > 0 ? normalized : undefined;
 }
 
-/** Canonicalizes exact-match criteria while preserving their original order. */
-export function normalize_excluded_window_criteria(criteria: readonly string[]): string[] {
+/** Canonicalizes exact-match window criteria while preserving their original order. */
+export function normalize_window_criteria(criteria: readonly string[]): string[] {
   const normalized_criteria: string[] = [];
   const seen_criteria = new Set<string>();
 
   for (const criterion of criteria) {
-    const normalized = normalize_excluded_window_criterion(criterion);
+    const normalized = normalize_window_criterion(criterion);
     if (normalized && !seen_criteria.has(normalized)) {
       seen_criteria.add(normalized);
       normalized_criteria.push(normalized);
@@ -54,6 +55,7 @@ export class FocusSettings {
     'is-background-blur': [],
     'desaturate-percentage': [],
     'is-desaturate-enabled': [],
+    'special-focus-windows': [],
     'excluded-windows': []
   };
 
@@ -109,24 +111,40 @@ export class FocusSettings {
     this.settings.set_boolean('is-desaturate-enabled', val);
   }
 
+  get special_focus_windows(): string[] {
+    return normalize_window_criteria(this.settings.get_strv('special-focus-windows'));
+  }
+
+  set_special_focus_windows(criteria: readonly string[]): void {
+    this.settings.set_strv('special-focus-windows', normalize_window_criteria(criteria));
+  }
+
   get excluded_windows(): string[] {
-    return normalize_excluded_window_criteria(this.settings.get_strv('excluded-windows'));
+    return normalize_window_criteria(this.settings.get_strv('excluded-windows'));
   }
 
   set_excluded_windows(criteria: readonly string[]): void {
-    this.settings.set_strv('excluded-windows', normalize_excluded_window_criteria(criteria));
+    this.settings.set_strv('excluded-windows', normalize_window_criteria(criteria));
   }
 
-  /** Rewrites manually edited settings into the format used by the preferences UI. */
-  normalize_excluded_windows(): string[] {
-    const stored_criteria = this.settings.get_strv('excluded-windows');
-    const normalized_criteria = normalize_excluded_window_criteria(stored_criteria);
+  /** Rewrites manually edited special-focus settings into the preferences format. */
+  normalize_special_focus_windows(): string[] {
+    return this.normalize_window_list('special-focus-windows');
+  }
 
+  /** Rewrites manually edited exclusion settings into the preferences format. */
+  normalize_excluded_windows(): string[] {
+    return this.normalize_window_list('excluded-windows');
+  }
+
+  private normalize_window_list(key: 'special-focus-windows' | 'excluded-windows'): string[] {
+    const stored_criteria = this.settings.get_strv(key);
+    const normalized_criteria = normalize_window_criteria(stored_criteria);
     if (
       stored_criteria.length !== normalized_criteria.length ||
       stored_criteria.some((criterion, index) => criterion !== normalized_criteria[index])
     ) {
-      this.settings.set_strv('excluded-windows', normalized_criteria);
+      this.settings.set_strv(key, normalized_criteria);
     }
 
     return normalized_criteria;
@@ -149,6 +167,9 @@ export class FocusSettings {
             case 'is-background-blur':
             case 'is-desaturate-enabled':
               this.emit(key, this.settings.get_boolean(key));
+              break;
+            case 'special-focus-windows':
+              this.emit(key, this.special_focus_windows);
               break;
             case 'excluded-windows':
               this.emit(key, this.excluded_windows);
