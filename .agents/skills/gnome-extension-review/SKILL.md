@@ -17,7 +17,7 @@ Build a resource ledger for every changed GObject, signal, GLib source, window e
 
 1. Confirm module scope and constructors create only static JavaScript data. Dynamic objects, signals, Shell mutations, and sources belong in `enable()`.
 2. Pair every object or effect created in `enable()` with destruction or restoration in `disable()`.
-3. Pair every signal connection with disconnection. Prefer the repository's `signal_tracked(...).connectObject()` and matching `disconnectObject()`.
+3. Pair every signal connection with disconnection. In `extension.js`, use `connectObject()` and `disconnectObject()` directly on supported Shell objects. In `prefs.js` and shared preferences modules, use `connect()` and retain the signal ID for `disconnect()`.
 4. Remove every GLib source explicitly during disable, even when its callback normally returns `GLib.SOURCE_REMOVE`.
 5. Drop JavaScript references after cleanup to prevent leaks and use-after-free behavior.
 6. Cancel GIO operations with `Gio.Cancellable` when practical. Otherwise use a generation or enabled-state guard and ensure completion cannot mutate disabled state.

@@ -2,7 +2,6 @@ import Meta from 'gi://Meta';
 import Clutter from 'gi://Clutter';
 
 import { FocusSettings } from './settings.js';
-import { signal_tracked } from './signals.js';
 
 /** 100% opacity value */
 const DEFAULT_OPACITY = 255;
@@ -96,11 +95,11 @@ export class GnomeFocusManager {
 
     const state: OwnedWindowState = { opacities: new Map() };
     this.owned_window_states.set(window_actor, state);
-    signal_tracked(window_actor).connectObject(
+    window_actor.connectObject(
       'destroy',
       (actor: Meta.WindowActor) => {
         for (const opacity_actor of state.opacities.keys()) {
-          signal_tracked(opacity_actor).disconnectObject(state);
+          opacity_actor.disconnectObject(state);
         }
         state.opacities.clear();
         this.owned_window_states.delete(actor);
@@ -124,7 +123,7 @@ export class GnomeFocusManager {
         if (actor.get_opacity() === opacity.applied) {
           actor.set_opacity(opacity.original);
         }
-        signal_tracked(actor).disconnectObject(state);
+        actor.disconnectObject(state);
       }
 
       if (state.blur_effect && window_actor.get_effect(BLUR_EFFECT_NAME) === state.blur_effect) {
@@ -134,7 +133,7 @@ export class GnomeFocusManager {
         window_actor.remove_effect(state.desaturate_effect);
       }
 
-      signal_tracked(window_actor).disconnectObject(this);
+      window_actor.disconnectObject(this);
     }
 
     this.owned_window_states.delete(window_actor);
@@ -213,7 +212,7 @@ export class GnomeFocusManager {
           original: original_opacity,
           applied: actor.get_opacity()
         });
-        signal_tracked(actor).connectObject('destroy', () => state.opacities.delete(actor), state);
+        actor.connectObject('destroy', () => state.opacities.delete(actor), state);
       }
     }
   }
