@@ -6,7 +6,13 @@ A quick GNOME extension for apply transparency to inactive windows.
 
 ## Settings
 
-Open Focus from the GNOME Extensions app to configure opacity, inactive-window effects, and exclusions.
+Open Focus from the GNOME Extensions app to configure opacity, inactive-window effects, special focus windows,
+and exclusions.
+
+### Special Focus Windows
+
+Use the **Special Focus Windows** preferences page to add or remove windows that should use the special focused
+opacity while active.
 
 ### Excluded Windows
 
@@ -16,31 +22,26 @@ Use the **Excluded Windows** preferences page to add or remove exact criteria. A
 - its `WM_CLASS` instance
 - its full window title
 
-Matching is case-sensitive. On X11, `xprop WM_CLASS` can show the class and instance; GNOME Shell's Looking Glass can help inspect windows on Wayland. Blank entries are not stored, duplicate entries are removed, and changes apply immediately while the extension is enabled.
+Both lists use exact, case-sensitive matches against a window's `WM_CLASS`, `WM_CLASS` instance, or full title. On
+X11, `xprop WM_CLASS` can show the class and instance; GNOME Shell's Looking Glass can help inspect windows on
+Wayland. Blank entries are not stored, duplicate entries are removed, and changes apply immediately while the
+extension is enabled.
 
-Optional JSON configuration files are read from `~/.config/focus@scaryrawr.github.io/`. When that directory is
-not present, Focus falls back to its legacy `~/.config/Focus/` location. Each file must contain a JSON array of
-strings; invalid files are ignored with a warning in the GNOME Shell log.
+## Legacy JSON Lists
 
-### Special Focus List
+Existing JSON lists remain supported and are merged with the corresponding preferences. Focus reads them from
+`~/.config/focus@scaryrawr.github.io/`, falling back to the legacy `~/.config/Focus/` directory when the preferred
+directory is absent. Each file must contain a JSON array of strings; invalid files are ignored with a warning in
+the GNOME Shell log.
 
-A special focus list can be created at `~/.config/focus@scaryrawr.github.io/special_focus.json`.
-
-Windows that match the list criteria will have an opacity applied to them that can be adjusted in the Extension Preference Window.
-
-It uses the WM_CLASS (use `xprop` to help figure them out).
+`special_focus.json` adds special focus windows:
 
 ```json
 ["Code", "Code - Insiders"]
 ```
 
-## Legacy Ignore List
-
-An ignore list can be created at `~/.config/focus@scaryrawr.github.io/ignore_focus.json`.
-
-Windows that match the list criteria will not have their appearance modified even when inactive.
-
-The legacy list is still honored and merged with exclusions from preferences. Focus reads it without modifying or overwriting the file. Criteria use the same exact, case-sensitive `WM_CLASS`, instance, or full-title matching described above. The example below lets Firefox's Picture-in-Picture keep its normal appearance.
+`ignore_focus.json` adds excluded windows. This example lets Firefox's Picture-in-Picture keep its normal
+appearance:
 
 ```json
 ["Toolkit"]
