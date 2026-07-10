@@ -9,7 +9,7 @@ Review the current change against repository conventions and GNOME Shell extensi
 
 ## Inspect the change
 
-Read `AGENTS.md`, `metadata.json`, `package.json`, the changed source files, and the generated archive inputs. Classify each change as Shell runtime, preferences, settings/schema, compatibility, or packaging.
+Fetch the current [GNOME Shell Extensions Review Guidelines](https://gjs.guide/extensions/review-guidelines/review-guidelines.html) before each audit and treat them as authoritative; this skill is only an operational checklist. Read `AGENTS.md`, `metadata.json`, `package.json`, the changed source files, and the generated archive inputs. Classify each change as Shell runtime, preferences, settings/schema, compatibility, legal/external behavior, or packaging. Distinguish mandatory (`MUST`/`MUST NOT`) findings from recommendations and functional-quality risks.
 
 ## Audit lifecycle ownership
 
@@ -38,6 +38,14 @@ Build a resource ledger for every changed GObject, signal, GLib source, window e
 - Preserve GSettings value types, defaults, ranges, and live-change behavior.
 - Keep the schema XML in the packaged `schemas/` directory.
 
+## Audit the remaining official rules
+
+- Reject deprecated `ByteArray`, `Lang`, and `Mainloop` imports, unjustified `run_dispose()`, excessive logging, telemetry, and extension-system interference.
+- Flag binaries and external scripts, unsafe or privileged subprocesses, dependency installation without explicit user action, and clipboard access not declared in the extension description.
+- Validate minimal metadata: UUID namespace, description, URL, stable/non-future Shell versions, and only necessary `session-modes` or donation keys.
+- Confirm GPL-compatible distribution terms and attribution for copied extension code; flag unlicensed copyrighted or trademarked assets.
+- Confirm the extension is functional and contains no unnecessary or unexplained generated code. Large, inconsistent, imaginary, or prompt-like code is a review risk.
+
 ## Validate and inspect packaging
 
 Run:
@@ -48,7 +56,9 @@ pnpm build:package
 unzip -l focus@scaryrawr.github.io.zip
 ```
 
-Confirm the archive contains only runtime files, readable non-minified JavaScript, metadata, and schema sources. It must not contain TypeScript sources, build scripts, dependencies, binaries, or unrelated assets.
+Extract the archive and audit the exact submitted files. Confirm it contains only runtime files, readable non-minified JavaScript, metadata, and schema sources. It must not contain TypeScript sources, build/install scripts, dependencies, binaries, `.po`/`.pot` files, compiled schemas, unused media, or unrelated assets. Check bundled imports and lifecycle calls because reviewers see generated JavaScript, and compare extracted files byte-for-byte with `dist/`.
+
+Finish with an evidence ledger covering initialization/lifecycle, signal/source cleanup, process boundaries, deprecated/dangerous APIs, logging, external behavior, metadata, schemas, legal/attribution, package contents/readability, build checks, and runtime checks. Include clean categories and clearly state any runtime checks that could not be performed; a clean linter or Shexli result is not sufficient.
 
 ## Perform GNOME runtime checks
 
