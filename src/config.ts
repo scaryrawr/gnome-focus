@@ -2,11 +2,44 @@ import type { Extension } from '@girs/gnome-shell/extensions/extension';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 
-Gio._promisify(Gio.File.prototype, 'load_contents_async');
-
 type ExtensionMetadata = Extension['metadata'];
 
 type ConfigName = 'special_focus.json' | 'ignore_focus.json';
+
+function query_file_type(file: Gio.File, cancellable: Gio.Cancellable): Promise<Gio.FileType> {
+  return new Promise((resolve, reject) => {
+    file.query_info_async(
+      Gio.FILE_ATTRIBUTE_STANDARD_TYPE,
+      Gio.FileQueryInfoFlags.NONE,
+      GLib.PRIORITY_DEFAULT,
+      cancellable,
+      (_source, result) => {
+        try {
+          resolve(file.query_info_finish(result).get_file_type());
+        } catch (error) {
+          reject(error);
+        }
+      }
+    );
+  });
+}
+
+function load_file_contents(file: Gio.File, cancellable: Gio.Cancellable): Promise<Uint8Array> {
+  return new Promise((resolve, reject) => {
+    file.load_contents_async(cancellable, (_source, result) => {
+      try {
+        const [success, content] = file.load_contents_finish(result);
+        if (!success) {
+          reject(new Error(`Failed to read ${file.get_path() ?? file.get_uri()}`));
+          return;
+        }
+        resolve(content);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  });
+}
 
 function is_io_error(error: unknown, code: number): boolean {
   return error instanceof GLib.Error && error.matches(Gio.IOErrorEnum, code);
@@ -22,16 +55,11 @@ async function resolve_configuration_dir(
   const preferred_file = Gio.File.new_for_path(preferred_dir);
 
   try {
-    const info = await preferred_file.query_info_async(
-      Gio.FILE_ATTRIBUTE_STANDARD_TYPE,
-      Gio.FileQueryInfoFlags.NONE,
-      GLib.PRIORITY_DEFAULT,
-      cancellable
-    );
+    const file_type = await query_file_type(preferred_file, cancellable);
     if (cancellable.is_cancelled()) {
       return undefined;
     }
-    return info.get_file_type() === Gio.FileType.DIRECTORY ? preferred_dir : legacy_dir;
+    return file_type === Gio.FileType.DIRECTORY ? preferred_dir : legacy_dir;
   } catch (error) {
     if (is_io_error(error, Gio.IOErrorEnum.CANCELLED)) {
       return undefined;
@@ -76,7 +104,7 @@ export async function load_config(
   const file_path = GLib.build_filenamev([config_dir, name]);
   const file = Gio.File.new_for_path(file_path);
   try {
-    const [content] = await file.load_contents_async(cancellable);
+    const content = await load_file_contents(file, cancellable);
     if (cancellable.is_cancelled()) {
       return undefined;
     }
