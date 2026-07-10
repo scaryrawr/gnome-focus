@@ -59,11 +59,7 @@ export default class GnomeFocus extends Extension {
     }
     this.config_cancellable = undefined;
 
-    this.extension_instance = new GnomeFocusManager(
-      get_settings(this.getSettings()),
-      special_focus,
-      ignore_focus
-    );
+    this.extension_instance = new GnomeFocusManager(get_settings(this.getSettings()), special_focus, ignore_focus);
     this.pending_window_actors = new Set();
 
     signal_tracked(global.display).connectObject(

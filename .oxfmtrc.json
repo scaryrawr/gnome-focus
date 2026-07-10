@@ -1,0 +1,14 @@
+{
+  "printWidth": 120,
+  "singleQuote": true,
+  "arrowParens": "avoid",
+  "trailingComma": "none",
+  "sortPackageJson": false,
+  "ignorePatterns": [
+    "dist/**",
+    "schemas/gschemas.compiled",
+    "focus@scaryrawr.github.io.zip",
+    "node_modules/**",
+    "pnpm-lock.yaml"
+  ]
+}
