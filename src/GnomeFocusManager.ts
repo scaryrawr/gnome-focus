@@ -27,17 +27,21 @@ export function is_valid_window_type(window: Meta.Window): boolean {
 
 export class GnomeFocusManager {
   active_window_actor: Meta.WindowActor | undefined;
+  private excluded_windows: string[];
+
   constructor(
     readonly settings: FocusSettings,
     readonly special_focus: string[] | undefined,
-    readonly ignore_inactive: string[] | undefined
+    readonly legacy_ignore_inactive: string[] | undefined
   ) {
+    this.excluded_windows = settings.excluded_windows;
     settings.on('focus-opacity', this.update_focused_window_opacity);
     settings.on('special-opacity', this.update_special_focused_window_opacity);
     settings.on('inactive-opacity', this.update_inactive_windows_opacity);
     settings.on('is-background-blur', this.update_is_background_blur);
     settings.on('is-desaturate-enabled', this.update_is_desaturate_enabled);
     settings.on('desaturate-percentage', this.update_desaturate_percentage);
+    settings.on('excluded-windows', this.update_excluded_windows);
   }
 
   static get_opacity_targets(window_actor: Meta.WindowActor): Clutter.Actor[] {
@@ -86,14 +90,22 @@ export class GnomeFocusManager {
       return true;
     }
 
-    if (!this.ignore_inactive) {
+    const has_exclusion_criteria =
+      (this.legacy_ignore_inactive?.length ?? 0) > 0 || this.excluded_windows.length > 0;
+    if (!has_exclusion_criteria) {
       return false;
     }
 
     return (
       !!window &&
       (!is_valid_window_type(window) ||
-        this.ignore_inactive.some(
+        this.legacy_ignore_inactive?.some(
+          criteria =>
+            criteria === window.get_wm_class() ||
+            criteria === window.get_wm_class_instance() ||
+            criteria === window.get_title()
+        ) ||
+        this.excluded_windows.some(
           criteria =>
             criteria === window.get_wm_class() ||
             criteria === window.get_wm_class_instance() ||
@@ -244,6 +256,34 @@ export class GnomeFocusManager {
     }
   };
 
+  update_excluded_windows = (criteria: string[]): void => {
+    this.excluded_windows = criteria;
+    const focused_window = global.display.focus_window;
+
+    for (const window_actor of global.get_window_actors()) {
+      if (window_actor.is_destroyed()) {
+        continue;
+      }
+
+      if (this.is_ignored(window_actor)) {
+        if (window_actor === this.active_window_actor) {
+          this.clear_active_window(false);
+        }
+        GnomeFocusManager.restore_window_actor(window_actor);
+      } else if (window_actor.get_meta_window() === focused_window) {
+        this.set_active_window_actor(window_actor);
+      } else {
+        this.update_inactive_window_actor(window_actor);
+      }
+    }
+  };
+
+  static restore_window_actor(window_actor: Meta.WindowActor): void {
+    GnomeFocusManager.set_opacity(window_actor, 100);
+    window_actor.remove_effect_by_name(BLUR_EFFECT_NAME);
+    window_actor.remove_effect_by_name(DESATURATE_EFFECT_NAME);
+  }
+
   /** Reconciles ready window actors with Mutter's current focus state. */
   refresh = (pending_window_actors?: ReadonlySet<Meta.WindowActor>): void => {
     const focused_window = global.display.focus_window;
@@ -286,9 +326,7 @@ export class GnomeFocusManager {
         continue;
       }
 
-      GnomeFocusManager.set_opacity(window_actor, 100);
-      window_actor.remove_effect_by_name(BLUR_EFFECT_NAME);
-      window_actor.remove_effect_by_name(DESATURATE_EFFECT_NAME);
+      GnomeFocusManager.restore_window_actor(window_actor);
     }
   }
 }

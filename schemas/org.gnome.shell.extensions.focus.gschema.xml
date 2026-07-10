@@ -3,14 +3,17 @@
 	<schema id="org.gnome.shell.extensions.focus" path="/org/gnome/shell/extensions/focus/">
 		<key name="inactive-opacity" type="u">
 			<default>80</default>
+			<range min="0" max="100"/>
 			<summary>Opacity of inactive windows 0-100</summary>
 		</key>
 		<key name="special-focus-opacity" type="u">
 			<default>95</default>
+			<range min="0" max="100"/>
 			<summary>Opacity of focused window if in special focus list 0-100</summary>
 		</key>
 		<key name="focus-opacity" type="u">
 			<default>100</default>
+			<range min="0" max="100"/>
 			<summary>Opacity of focused window 0-100</summary>
 		</key>
 		<key name="is-background-blur" type="b">
@@ -19,11 +22,17 @@
 		</key>
 		<key name="desaturate-percentage" type="u">
 			<default>50</default>
+			<range min="0" max="100"/>
 			<summary>Desaturation percentage applied to inactive windows 0-100</summary>
 		</key>
 		<key name="is-desaturate-enabled" type="b">
 			<default>false</default>
 			<summary>Enable desaturation effect for inactive windows</summary>
+		</key>
+		<key name="excluded-windows" type="as">
+			<default>[]</default>
+			<summary>Windows excluded from focus effects</summary>
+			<description>Exact case-sensitive matches for WM_CLASS, WM_CLASS instance, or window title.</description>
 		</key>
 	</schema>
 </schemalist>
