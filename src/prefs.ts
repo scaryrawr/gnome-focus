@@ -3,11 +3,7 @@ import Gtk from 'gi://Gtk';
 
 import { ExtensionPreferences } from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
-import {
-  FocusSettings,
-  get_settings,
-  normalize_excluded_window_criterion
-} from './settings.js';
+import { FocusSettings, get_settings, normalize_excluded_window_criterion } from './settings.js';
 
 type PercentageRowOptions = {
   title: string;
@@ -18,19 +14,18 @@ type PercentageRowOptions = {
 };
 
 /** Creates an integer percentage row aligned with the schema's 0..100 range. */
-function create_percentage_row({
-  title,
-  subtitle,
-  value,
-  step,
-  set_value
-}: PercentageRowOptions): Adw.SpinRow {
+function create_percentage_row({ title, subtitle, value, step, set_value }: PercentageRowOptions): Adw.SpinRow {
   const row = Adw.SpinRow.new_with_range(0, 100, step);
   row.set_title(title);
   row.set_subtitle(subtitle);
   row.set_value(value);
   row.connect('notify::value', () => {
-    set_value(row.get_value());
+    const rounded_value = Math.round(row.get_value());
+    if (rounded_value !== row.get_value()) {
+      row.set_value(rounded_value);
+      return;
+    }
+    set_value(rounded_value);
   });
   return row;
 }

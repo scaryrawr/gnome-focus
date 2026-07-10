@@ -1,0 +1,2 @@
+minimumReleaseAgeExclude:
+  - '@girs/gnome-shell@50.0.4'

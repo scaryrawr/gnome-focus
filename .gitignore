@@ -2,6 +2,6 @@ target/
 dist/
 gir/
 node_modules/
-.rollup.cache/
 *.zip
 gschemas.compiled
+pnpm-debug.log*

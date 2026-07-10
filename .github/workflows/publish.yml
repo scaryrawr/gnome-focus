@@ -7,8 +7,6 @@ on:
     tags:
       - v*
   pull_request:
-    branches:
-      - main
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -21,22 +19,20 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: pnpm
 
-      - name: Install Yarn
-        run: |
-          npm install -g yarn@^1.22.0
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
-      - name: Install Dependencies
-        run: |
-          yarn install
-
-      - name: Run build
-        run: |
-          yarn build:package
+      - name: Build package
+        run: pnpm build:package
 
       - name: Upload extension
         uses: actions/upload-artifact@v4

@@ -18,33 +18,32 @@ Use the **Excluded Windows** preferences page to add or remove exact criteria. A
 
 Matching is case-sensitive. On X11, `xprop WM_CLASS` can show the class and instance; GNOME Shell's Looking Glass can help inspect windows on Wayland. Blank entries are not stored, duplicate entries are removed, and changes apply immediately while the extension is enabled.
 
+Optional JSON configuration files are read from `~/.config/focus@scaryrawr.github.io/`. When that directory is
+not present, Focus falls back to its legacy `~/.config/Focus/` location. Each file must contain a JSON array of
+strings; invalid files are ignored with a warning in the GNOME Shell log.
+
 ### Special Focus List
 
-A special focus list can be created at `~/.config/Focus/special_focus.json`.
+A special focus list can be created at `~/.config/focus@scaryrawr.github.io/special_focus.json`.
 
 Windows that match the list criteria will have an opacity applied to them that can be adjusted in the Extension Preference Window.
 
 It uses the WM_CLASS (use `xprop` to help figure them out).
 
 ```json
-[
-    "Code",
-    "Code - Insiders"
-]
+["Code", "Code - Insiders"]
 ```
 
 ## Legacy Ignore List
 
-An ignore list can be created at `~/.config/Focus/ignore_focus.json`.
+An ignore list can be created at `~/.config/focus@scaryrawr.github.io/ignore_focus.json`.
 
 Windows that match the list criteria will not have their appearance modified even when inactive.
 
 The legacy list is still honored and merged with exclusions from preferences. Focus reads it without modifying or overwriting the file. Criteria use the same exact, case-sensitive `WM_CLASS`, instance, or full-title matching described above. The example below lets Firefox's Picture-in-Picture keep its normal appearance.
 
 ```json
-[
-    "Toolkit"
-]
+["Toolkit"]
 ```
 
 ## Installing
@@ -53,24 +52,38 @@ The legacy list is still honored and merged with exclusions from preferences. Fo
 
 ## Repo Guide
 
-Thanks to [gjsify](https://gjsify.org/pages/projects) the build process has gotten a lot easier (no need to manually generate types using gobject-introspection), and you can actually build non-Linux systems. I recommend only installing on Linux though.
+The build uses [GJS type definitions](https://gjsify.org/), Rolldown, Oxlint, native TypeScript, and Oxfmt.
+Building works on non-Linux systems, but local extension installation requires Linux and GNOME Shell.
+
+### Prerequisites
+
+Use Node.js 22 and the pnpm 11 version pinned in `package.json`.
+
+```bash
+corepack enable
+pnpm install --frozen-lockfile
+```
+
+### Quality checks
+
+```bash
+pnpm lint
+```
 
 ### Build
 
-Currently, building doesn't produce expected errors (need to figure out [esbuild](https://esbuild.github.io/)).
-
 ```bash
-yarn build
+pnpm build
 ```
 
 ### Packaging for [GNOME Extensions](https://extensions.gnome.org/)
 
 ```bash
-yarn build:package
+pnpm build:package
 ```
 
 ### Installing Locally
 
 ```bash
-yarn package:install
+pnpm package:install
 ```

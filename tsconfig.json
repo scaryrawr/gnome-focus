@@ -2,7 +2,6 @@
   "compilerOptions": {
     "target": "ESNext",
     "module": "NodeNext",
-    "downlevelIteration": true,
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
@@ -18,5 +17,7 @@
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "NodeNext",
     "lib": ["ESNext"]
-  }
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["dist"]
 }

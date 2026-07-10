@@ -168,8 +168,7 @@ export class GnomeFocusManager {
       return true;
     }
 
-    const has_exclusion_criteria =
-      (this.legacy_ignore_inactive?.length ?? 0) > 0 || this.excluded_windows.length > 0;
+    const has_exclusion_criteria = (this.legacy_ignore_inactive?.length ?? 0) > 0 || this.excluded_windows.length > 0;
     if (!has_exclusion_criteria) {
       return false;
     }
@@ -263,10 +262,7 @@ export class GnomeFocusManager {
 
     const state = this.owned_window_states.get(window_actor);
     if (!desaturate) {
-      if (
-        state?.desaturate_effect &&
-        window_actor.get_effect(DESATURATE_EFFECT_NAME) === state.desaturate_effect
-      ) {
+      if (state?.desaturate_effect && window_actor.get_effect(DESATURATE_EFFECT_NAME) === state.desaturate_effect) {
         window_actor.remove_effect(state.desaturate_effect);
       }
       if (state) {

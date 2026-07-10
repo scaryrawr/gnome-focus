@@ -134,25 +134,29 @@ export class FocusSettings {
 
   on<E extends keyof SettingsChangeEvents>(event: E, callback: CallbackTypes<SettingsChangeEvents>[E]): void {
     if (!this.connected) {
-      signal_tracked(this.settings).connectObject('changed', (_settings: Gio.Settings, key: string) => {
-        switch (key) {
-          case 'focus-opacity':
-          case 'inactive-opacity':
-          case 'desaturate-percentage':
-            this.emit(key, this.settings.get_uint(key));
-            break;
-          case 'special-focus-opacity':
-            this.emit('special-opacity', this.settings.get_uint('special-focus-opacity'));
-            break;
-          case 'is-background-blur':
-          case 'is-desaturate-enabled':
-            this.emit(key, this.settings.get_boolean(key));
-            break;
-          case 'excluded-windows':
-            this.emit(key, this.excluded_windows);
-            break;
-        }
-      }, this);
+      signal_tracked(this.settings).connectObject(
+        'changed',
+        (_settings: Gio.Settings, key: string) => {
+          switch (key) {
+            case 'focus-opacity':
+            case 'inactive-opacity':
+            case 'desaturate-percentage':
+              this.emit(key, this.settings.get_uint(key));
+              break;
+            case 'special-focus-opacity':
+              this.emit('special-opacity', this.settings.get_uint('special-focus-opacity'));
+              break;
+            case 'is-background-blur':
+            case 'is-desaturate-enabled':
+              this.emit(key, this.settings.get_boolean(key));
+              break;
+            case 'excluded-windows':
+              this.emit(key, this.excluded_windows);
+              break;
+          }
+        },
+        this
+      );
       this.connected = true;
     }
 
