@@ -1,5 +1,7 @@
 import Gio from 'gi://Gio';
 
+import { signal_tracked } from './signals.js';
+
 type SettingsChangeEvents = {
   'focus-opacity': number;
   'special-opacity': number;
@@ -21,7 +23,7 @@ type SettingsListenerMap = ListenerMap<SettingsChangeEvents>;
 
 export class FocusSettings {
   settings: Gio.Settings;
-  connection: number | undefined;
+  private connected = false;
   listeners: SettingsListenerMap = {
     'focus-opacity': [],
     'inactive-opacity': [],
@@ -84,21 +86,24 @@ export class FocusSettings {
   }
 
   on<E extends keyof SettingsChangeEvents>(event: E, callback: CallbackTypes<SettingsChangeEvents>[E]): void {
-    if (this.connection === undefined) {
-      this.connection = this.settings.connect('changed', (_, key: keyof SettingsChangeEvents) => {
+    if (!this.connected) {
+      signal_tracked(this.settings).connectObject('changed', (_settings: Gio.Settings, key: string) => {
         switch (key) {
           case 'focus-opacity':
           case 'inactive-opacity':
-          case 'special-opacity':
           case 'desaturate-percentage':
             this.emit(key, this.settings.get_uint(key));
+            break;
+          case 'special-focus-opacity':
+            this.emit('special-opacity', this.settings.get_uint('special-focus-opacity'));
             break;
           case 'is-background-blur':
           case 'is-desaturate-enabled':
             this.emit(key, this.settings.get_boolean(key));
             break;
         }
-      });
+      }, this);
+      this.connected = true;
     }
 
     this.listeners[event].push(callback);
@@ -107,7 +112,7 @@ export class FocusSettings {
   off<E extends keyof SettingsChangeEvents>(event: E, callback: (value: SettingsChangeEvents[E]) => void): void {
     const index = this.listeners[event].indexOf(callback);
     if (index >= 0) {
-      this.listeners[event].slice(index, 1);
+      this.listeners[event].splice(index, 1);
     }
 
     for (const key in this.listeners) {
@@ -126,15 +131,13 @@ export class FocusSettings {
   }
 
   clear(): void {
-    if (this.connection !== undefined) {
-      this.settings.disconnect(this.connection);
-      delete this.connection;
+    if (this.connected) {
+      signal_tracked(this.settings).disconnectObject(this);
+      this.connected = false;
     }
 
     for (const key in this.listeners) {
-      if (this.listeners[key as keyof SettingsChangeEvents].length > 0) {
-        return;
-      }
+      this.listeners[key as keyof SettingsChangeEvents].length = 0;
     }
   }
 }
