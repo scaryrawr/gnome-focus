@@ -2,6 +2,8 @@ import type { Extension } from '@girs/gnome-shell/extensions/extension';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
 
+Gio._promisify(Gio.File.prototype, 'load_contents_async');
+
 type ExtensionMetadata = Extension['metadata'];
 
 type ConfigName = 'special_focus.json' | 'ignore_focus.json';
