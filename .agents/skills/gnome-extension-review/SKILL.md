@@ -54,7 +54,14 @@ Run:
 pnpm lint
 pnpm build:package
 unzip -l focus@scaryrawr.github.io.zip
+
+python -m venv .venv-shexli
+. .venv-shexli/bin/activate
+python -m pip install -U shexli
+shexli --format json focus@scaryrawr.github.io.zip
 ```
+
+Run Shexli against the exact ZIP, not only `src/` or `dist/`, and record its version, exit status, finding count, severities, and target Shell versions. If Shexli 0.2.1 installs `tree-sitter` 0.26.0 and segfaults, pin `tree-sitter==0.25.2` with `tree-sitter-javascript==0.25.0` in the disposable environment and rerun; this is a tool compatibility issue, not a clean or failed extension result. Pass an absolute path when analyzing a directory because Shexli 0.2.1 can fail on relative directory paths.
 
 Extract the archive and audit the exact submitted files. Confirm it contains only runtime files, readable non-minified JavaScript, metadata, and schema sources. It must not contain TypeScript sources, build/install scripts, dependencies, binaries, `.po`/`.pot` files, compiled schemas, unused media, or unrelated assets. Check bundled imports and lifecycle calls because reviewers see generated JavaScript, and compare extracted files byte-for-byte with `dist/`.
 
