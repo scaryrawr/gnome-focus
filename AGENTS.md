@@ -5,7 +5,7 @@
 - `src/extension.ts` is the GNOME Shell extension entrypoint; `src/prefs.ts` builds the GTK preferences UI.
 - `src/GnomeFocusManager.ts` owns window effects. `src/settings.ts` wraps GSettings; `src/config.ts` loads optional user JSON lists.
 - `schemas/org.gnome.shell.extensions.focus.gschema.xml` is the source of extension settings. Keep schema keys, `FocusSettings`, and preferences controls synchronized.
-- `metadata.json` declares the UUID and Shell versions. Builds add the description and derive the extension version from `package.json`'s minor version.
+- `metadata.json` declares the UUID and Shell versions. The build copies the description from `package.json` into the generated `dist/metadata.json`.
 - `dist/`, `schemas/gschemas.compiled`, and `focus@scaryrawr.github.io.zip` are generated; never edit or commit them.
 
 ## Build, Test, and Development Commands

@@ -1,7 +1,5 @@
 import Gio from 'gi://Gio';
 
-import { signal_tracked } from './signals.js';
-
 type SettingsChangeEvents = {
   'focus-opacity': number;
   'special-opacity': number;
@@ -47,7 +45,7 @@ export function normalize_window_criteria(criteria: readonly string[]): string[]
 
 export class FocusSettings {
   settings: Gio.Settings;
-  private connected = false;
+  private signal_id: number | undefined;
   listeners: SettingsListenerMap = {
     'focus-opacity': [],
     'inactive-opacity': [],
@@ -151,34 +149,29 @@ export class FocusSettings {
   }
 
   on<E extends keyof SettingsChangeEvents>(event: E, callback: CallbackTypes<SettingsChangeEvents>[E]): void {
-    if (!this.connected) {
-      signal_tracked(this.settings).connectObject(
-        'changed',
-        (_settings: Gio.Settings, key: string) => {
-          switch (key) {
-            case 'focus-opacity':
-            case 'inactive-opacity':
-            case 'desaturate-percentage':
-              this.emit(key, this.settings.get_uint(key));
-              break;
-            case 'special-focus-opacity':
-              this.emit('special-opacity', this.settings.get_uint('special-focus-opacity'));
-              break;
-            case 'is-background-blur':
-            case 'is-desaturate-enabled':
-              this.emit(key, this.settings.get_boolean(key));
-              break;
-            case 'special-focus-windows':
-              this.emit(key, this.special_focus_windows);
-              break;
-            case 'excluded-windows':
-              this.emit(key, this.excluded_windows);
-              break;
-          }
-        },
-        this
-      );
-      this.connected = true;
+    if (this.signal_id === undefined) {
+      this.signal_id = this.settings.connect('changed', (_settings: Gio.Settings, key: string) => {
+        switch (key) {
+          case 'focus-opacity':
+          case 'inactive-opacity':
+          case 'desaturate-percentage':
+            this.emit(key, this.settings.get_uint(key));
+            break;
+          case 'special-focus-opacity':
+            this.emit('special-opacity', this.settings.get_uint('special-focus-opacity'));
+            break;
+          case 'is-background-blur':
+          case 'is-desaturate-enabled':
+            this.emit(key, this.settings.get_boolean(key));
+            break;
+          case 'special-focus-windows':
+            this.emit(key, this.special_focus_windows);
+            break;
+          case 'excluded-windows':
+            this.emit(key, this.excluded_windows);
+            break;
+        }
+      });
     }
 
     this.listeners[event].push(callback);
@@ -206,9 +199,9 @@ export class FocusSettings {
   }
 
   clear(): void {
-    if (this.connected) {
-      signal_tracked(this.settings).disconnectObject(this);
-      this.connected = false;
+    if (this.signal_id !== undefined) {
+      this.settings.disconnect(this.signal_id);
+      this.signal_id = undefined;
     }
 
     for (const key in this.listeners) {

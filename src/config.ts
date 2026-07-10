@@ -4,19 +4,41 @@ import GLib from 'gi://GLib';
 
 type ExtensionMetadata = Extension['metadata'];
 
-let file_operations_promisified = false;
-const configuration_dir_promises = new WeakMap<Gio.Cancellable, Promise<string | undefined>>();
-
 type ConfigName = 'special_focus.json' | 'ignore_focus.json';
 
-function ensure_async_file_operations(): void {
-  if (file_operations_promisified) {
-    return;
-  }
+function query_file_type(file: Gio.File, cancellable: Gio.Cancellable): Promise<Gio.FileType> {
+  return new Promise((resolve, reject) => {
+    file.query_info_async(
+      Gio.FILE_ATTRIBUTE_STANDARD_TYPE,
+      Gio.FileQueryInfoFlags.NONE,
+      GLib.PRIORITY_DEFAULT,
+      cancellable,
+      (_source, result) => {
+        try {
+          resolve(file.query_info_finish(result).get_file_type());
+        } catch (error) {
+          reject(error);
+        }
+      }
+    );
+  });
+}
 
-  Gio._promisify(Gio.File.prototype, 'query_info_async');
-  Gio._promisify(Gio.File.prototype, 'load_contents_async');
-  file_operations_promisified = true;
+function load_file_contents(file: Gio.File, cancellable: Gio.Cancellable): Promise<Uint8Array> {
+  return new Promise((resolve, reject) => {
+    file.load_contents_async(cancellable, (_source, result) => {
+      try {
+        const [success, content] = file.load_contents_finish(result);
+        if (!success) {
+          reject(new Error(`Failed to read ${file.get_path() ?? file.get_uri()}`));
+          return;
+        }
+        resolve(content);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  });
 }
 
 function is_io_error(error: unknown, code: number): boolean {
@@ -33,16 +55,11 @@ async function resolve_configuration_dir(
   const preferred_file = Gio.File.new_for_path(preferred_dir);
 
   try {
-    const info = await preferred_file.query_info_async(
-      Gio.FILE_ATTRIBUTE_STANDARD_TYPE,
-      Gio.FileQueryInfoFlags.NONE,
-      GLib.PRIORITY_DEFAULT,
-      cancellable
-    );
+    const file_type = await query_file_type(preferred_file, cancellable);
     if (cancellable.is_cancelled()) {
       return undefined;
     }
-    return info.get_file_type() === Gio.FileType.DIRECTORY ? preferred_dir : legacy_dir;
+    return file_type === Gio.FileType.DIRECTORY ? preferred_dir : legacy_dir;
   } catch (error) {
     if (is_io_error(error, Gio.IOErrorEnum.CANCELLED)) {
       return undefined;
@@ -52,15 +69,6 @@ async function resolve_configuration_dir(
     }
     return legacy_dir;
   }
-}
-
-function get_configuration_dir(metadata: ExtensionMetadata, cancellable: Gio.Cancellable): Promise<string | undefined> {
-  let configuration_dir_promise = configuration_dir_promises.get(cancellable);
-  if (!configuration_dir_promise) {
-    configuration_dir_promise = resolve_configuration_dir(metadata, cancellable);
-    configuration_dir_promises.set(cancellable, configuration_dir_promise);
-  }
-  return configuration_dir_promise;
 }
 
 function parse_config(content: Uint8Array, file_path: string): string[] | undefined {
@@ -88,9 +96,7 @@ export async function load_config(
   name: ConfigName,
   cancellable: Gio.Cancellable
 ): Promise<string[] | undefined> {
-  ensure_async_file_operations();
-
-  const config_dir = await get_configuration_dir(metadata, cancellable);
+  const config_dir = await resolve_configuration_dir(metadata, cancellable);
   if (!config_dir || cancellable.is_cancelled()) {
     return undefined;
   }
@@ -98,7 +104,7 @@ export async function load_config(
   const file_path = GLib.build_filenamev([config_dir, name]);
   const file = Gio.File.new_for_path(file_path);
   try {
-    const [content] = await file.load_contents_async(cancellable);
+    const content = await load_file_contents(file, cancellable);
     if (cancellable.is_cancelled()) {
       return undefined;
     }
