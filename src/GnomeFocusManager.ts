@@ -436,7 +436,9 @@ export class GnomeFocusManager {
     }
 
     if (focused_actor_is_ignored) {
-      this.clear_active_window(false);
+      if (this.active_window_actor) {
+        this.clear_active_window(false);
+      }
       return;
     }
 
