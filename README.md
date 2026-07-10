@@ -6,7 +6,17 @@ A quick GNOME extension for apply transparency to inactive windows.
 
 ## Settings
 
-Can be found in Gnome Tweaks -> Extensions -> Focus.
+Open Focus from the GNOME Extensions app to configure opacity, inactive-window effects, and exclusions.
+
+### Excluded Windows
+
+Use the **Excluded Windows** preferences page to add or remove exact criteria. A window is excluded when a criterion exactly matches any of:
+
+- its `WM_CLASS`
+- its `WM_CLASS` instance
+- its full window title
+
+Matching is case-sensitive. On X11, `xprop WM_CLASS` can show the class and instance; GNOME Shell's Looking Glass can help inspect windows on Wayland. Blank entries are not stored, duplicate entries are removed, and changes apply immediately while the extension is enabled.
 
 Optional JSON configuration files are read from `~/.config/focus@scaryrawr.github.io/`. When that directory is
 not present, Focus falls back to its legacy `~/.config/Focus/` location. Each file must contain a JSON array of
@@ -24,13 +34,13 @@ It uses the WM_CLASS (use `xprop` to help figure them out).
 ["Code", "Code - Insiders"]
 ```
 
-## Ignore List
+## Legacy Ignore List
 
 An ignore list can be created at `~/.config/focus@scaryrawr.github.io/ignore_focus.json`.
 
-Windows that match the list criteria will not have their opacity modified even when inactive.
+Windows that match the list criteria will not have their appearance modified even when inactive.
 
-It uses the WM_CLASS (use `xprop` to help figure them out). The below example lets Firefox's Picture-in-Picture keep 100% opacity.
+The legacy list is still honored and merged with exclusions from preferences. Focus reads it without modifying or overwriting the file. Criteria use the same exact, case-sensitive `WM_CLASS`, instance, or full-title matching described above. The example below lets Firefox's Picture-in-Picture keep its normal appearance.
 
 ```json
 ["Toolkit"]

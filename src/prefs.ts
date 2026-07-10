@@ -1,157 +1,198 @@
+import Adw from 'gi://Adw';
 import Gtk from 'gi://Gtk';
 
 import { ExtensionPreferences } from 'resource:///org/gnome/Shell/Extensions/js/extensions/prefs.js';
 
-import { get_settings } from './settings.js';
+import { FocusSettings, get_settings, normalize_excluded_window_criterion } from './settings.js';
+
+type PercentageRowOptions = {
+  title: string;
+  subtitle: string;
+  value: number;
+  step: number;
+  set_value: (value: number) => void;
+};
+
+/** Creates an integer percentage row aligned with the schema's 0..100 range. */
+function create_percentage_row({ title, subtitle, value, step, set_value }: PercentageRowOptions): Adw.SpinRow {
+  const row = Adw.SpinRow.new_with_range(0, 100, step);
+  row.set_title(title);
+  row.set_subtitle(subtitle);
+  row.set_value(value);
+  row.connect('notify::value', () => {
+    const rounded_value = Math.round(row.get_value());
+    if (rounded_value !== row.get_value()) {
+      row.set_value(rounded_value);
+      return;
+    }
+    set_value(rounded_value);
+  });
+  return row;
+}
+
+/** Adds the appearance controls to the preferences window. */
+function add_appearance_page(window: Adw.PreferencesWindow, settings: FocusSettings): void {
+  const page = new Adw.PreferencesPage({
+    title: 'Appearance',
+    icon_name: 'applications-graphics-symbolic'
+  });
+  const opacity_group = new Adw.PreferencesGroup({
+    title: 'Opacity',
+    description: 'Set window opacity as a percentage.'
+  });
+
+  opacity_group.add(
+    create_percentage_row({
+      title: 'Focused windows',
+      subtitle: 'Opacity for the active window',
+      value: settings.focus_opacity,
+      step: 5,
+      set_value: value => settings.set_focus_opacity(value)
+    })
+  );
+  opacity_group.add(
+    create_percentage_row({
+      title: 'Inactive windows',
+      subtitle: 'Opacity for windows that do not have focus',
+      value: settings.inactive_opacity,
+      step: 5,
+      set_value: value => settings.set_inactive_opacity(value)
+    })
+  );
+  opacity_group.add(
+    create_percentage_row({
+      title: 'Special focus windows',
+      subtitle: 'Focused opacity for matches from special_focus.json',
+      value: settings.special_focus_opacity,
+      step: 5,
+      set_value: value => settings.set_special_focus_opacity(value)
+    })
+  );
+
+  const effects_group = new Adw.PreferencesGroup({
+    title: 'Inactive Window Effects'
+  });
+  const blur_row = new Adw.SwitchRow({
+    title: 'Blur',
+    subtitle: 'Blur inactive windows',
+    active: settings.is_background_blur
+  });
+  blur_row.connect('notify::active', () => {
+    settings.set_is_background_blur(blur_row.get_active());
+  });
+  effects_group.add(blur_row);
+
+  const desaturate_row = new Adw.SwitchRow({
+    title: 'Desaturate',
+    subtitle: 'Remove color from inactive windows',
+    active: settings.is_desaturate_enabled
+  });
+  desaturate_row.connect('notify::active', () => {
+    settings.set_is_desaturate_enabled(desaturate_row.get_active());
+  });
+  effects_group.add(desaturate_row);
+  effects_group.add(
+    create_percentage_row({
+      title: 'Desaturation',
+      subtitle: 'Amount of color removed from inactive windows',
+      value: settings.desaturate_percentage,
+      step: 10,
+      set_value: value => settings.set_desaturate_percentage(value)
+    })
+  );
+
+  page.add(opacity_group);
+  page.add(effects_group);
+  window.add(page);
+}
+
+/** Adds one removable exact-match criterion row. */
+function add_exclusion_row(
+  group: Adw.PreferencesGroup,
+  settings: FocusSettings,
+  criterion: string,
+  on_removed: () => void
+): void {
+  const row = new Adw.ActionRow({
+    title: criterion,
+    subtitle: 'Matches WM_CLASS, WM_CLASS instance, or window title',
+    subtitle_selectable: true,
+    use_markup: false
+  });
+  const remove_button = new Gtk.Button({
+    icon_name: 'edit-delete-symbolic',
+    tooltip_text: `Remove ${criterion}`,
+    valign: Gtk.Align.CENTER
+  });
+  remove_button.add_css_class('flat');
+  remove_button.connect('clicked', () => {
+    settings.set_excluded_windows(settings.excluded_windows.filter(value => value !== criterion));
+    group.remove(row);
+    on_removed();
+  });
+  row.add_suffix(remove_button);
+  row.set_activatable_widget(remove_button);
+  group.add(row);
+}
+
+/** Adds the editor for GSettings-backed exclusion criteria. */
+function add_exclusions_page(window: Adw.PreferencesWindow, settings: FocusSettings): void {
+  const page = new Adw.PreferencesPage({
+    title: 'Excluded Windows',
+    icon_name: 'action-unavailable-symbolic'
+  });
+  const group = new Adw.PreferencesGroup({
+    title: 'Exact Matches',
+    description:
+      'Excluded windows keep their normal appearance. Matching is exact and case-sensitive against WM_CLASS, its instance, or the full window title.'
+  });
+  const entry_row = new Adw.EntryRow({
+    title: 'Add WM_CLASS, instance, or title'
+  });
+  const add_button = new Gtk.Button({
+    icon_name: 'list-add-symbolic',
+    tooltip_text: 'Add criterion',
+    valign: Gtk.Align.CENTER
+  });
+  add_button.add_css_class('flat');
+  entry_row.add_suffix(add_button);
+  group.add(entry_row);
+
+  const update_add_button = (): void => {
+    const criterion = normalize_excluded_window_criterion(entry_row.get_text());
+    const is_duplicate = criterion ? settings.excluded_windows.includes(criterion) : false;
+    add_button.set_sensitive(!!criterion && !is_duplicate);
+    add_button.set_tooltip_text(is_duplicate ? 'Criterion already exists' : 'Add criterion');
+  };
+  const add_criterion = (): void => {
+    const criterion = normalize_excluded_window_criterion(entry_row.get_text());
+    if (!criterion || settings.excluded_windows.includes(criterion)) {
+      return;
+    }
+
+    settings.set_excluded_windows([...settings.excluded_windows, criterion]);
+    add_exclusion_row(group, settings, criterion, update_add_button);
+    entry_row.set_text('');
+  };
+
+  entry_row.connect('changed', update_add_button);
+  entry_row.connect('entry-activated', add_criterion);
+  add_button.connect('clicked', add_criterion);
+  update_add_button();
+
+  for (const criterion of settings.normalize_excluded_windows()) {
+    add_exclusion_row(group, settings, criterion, update_add_button);
+  }
+
+  page.add(group);
+  window.add(page);
+}
 
 export default class GnomeFocusPreferences extends ExtensionPreferences {
-  init() {}
-
-  getPreferencesWidget() {
+  async fillPreferencesWindow(window: Adw.PreferencesWindow): Promise<void> {
     const settings = get_settings(this.getSettings());
-
-    const widget = new Gtk.Grid({
-      columnSpacing: 12,
-      rowSpacing: 12,
-      visible: true
-    });
-
-    const title = new Gtk.Label({
-      label: '<b>' + this.metadata.name + ' Extension Preferences</b>',
-      halign: Gtk.Align.START,
-      useMarkup: true,
-      visible: true
-    });
-
-    widget.attach(title, 0, 0, 1, 1);
-
-    const create_spin_button = ({
-      label,
-      get_current_value,
-      set_value,
-      min,
-      max,
-      step
-    }: {
-      label: string;
-      get_current_value: () => number;
-      set_value: (value: number) => void;
-      min: number;
-      max: number;
-      step: number;
-    }) => {
-      const item_label = new Gtk.Label({
-        label: `${label}: [${Math.floor(get_current_value())}]`,
-        halign: Gtk.Align.START,
-        visible: true
-      });
-
-      const spin_button = Gtk.SpinButton.new_with_range(min, max, step);
-      spin_button.set_visible(true);
-      spin_button.set_value(get_current_value());
-
-      spin_button.connect('value-changed', (emitter: Gtk.SpinButton) => {
-        const value = emitter.get_value();
-        item_label.set_label(`${label}: [${Math.floor(value)}]`);
-        set_value(value);
-      });
-
-      return [item_label, spin_button];
-    };
-
-    const [focus_opacity_label, focus_opacity_scale] = create_spin_button({
-      label: 'Focus Opacity',
-      get_current_value: () => settings.focus_opacity,
-      set_value: value => {
-        settings.set_focus_opacity(value);
-      },
-      min: 50,
-      max: 100,
-      step: 5
-    });
-
-    widget.attach(focus_opacity_label, 0, 1, 1, 1);
-    widget.attach(focus_opacity_scale, 0, 2, 2, 1);
-
-    const [inactive_opacity_label, inactive_opacity_scale] = create_spin_button({
-      label: 'Inactive Opacity',
-      get_current_value: () => settings.inactive_opacity,
-      set_value: value => {
-        settings.set_inactive_opacity(value);
-      },
-      min: 50,
-      max: 100,
-      step: 5
-    });
-
-    widget.attach(inactive_opacity_label, 0, 3, 1, 1);
-    widget.attach(inactive_opacity_scale, 0, 4, 2, 1);
-
-    const [special_focus_opacity_label, special_focus_opacity_scale] = create_spin_button({
-      label: 'Special Focus Opacity',
-      get_current_value: () => settings.special_focus_opacity,
-      set_value: value => {
-        settings.set_special_focus_opacity(value);
-      },
-      min: 50,
-      max: 100,
-      step: 5
-    });
-
-    widget.attach(special_focus_opacity_label, 0, 5, 1, 1);
-    widget.attach(special_focus_opacity_scale, 0, 6, 2, 1);
-
-    const blur_label = new Gtk.Label({
-      label: 'Blur',
-      halign: Gtk.Align.START,
-      visible: true
-    });
-
-    const blur_toggle = new Gtk.Switch({
-      visible: true,
-      active: settings.is_background_blur
-    });
-
-    blur_toggle.connect('notify::active', () => {
-      settings.set_is_background_blur(blur_toggle.get_active());
-    });
-
-    widget.attach(blur_label, 0, 7, 1, 1);
-
-    widget.attach(blur_toggle, 1, 7, 1, 1);
-
-    const desaturate_label = new Gtk.Label({
-      label: 'Desaturate Inactive Windows',
-      halign: Gtk.Align.START,
-      visible: true
-    });
-
-    const desaturate_toggle = new Gtk.Switch({
-      visible: true,
-      active: settings.is_desaturate_enabled
-    });
-
-    desaturate_toggle.connect('notify::active', () => {
-      settings.set_is_desaturate_enabled(desaturate_toggle.get_active());
-    });
-
-    widget.attach(desaturate_label, 0, 8, 1, 1);
-    widget.attach(desaturate_toggle, 1, 8, 1, 1);
-
-    const [desaturate_percentage_label, desaturate_percentage_scale] = create_spin_button({
-      label: 'Desaturate Percentage',
-      get_current_value: () => settings.desaturate_percentage,
-      set_value: value => {
-        settings.set_desaturate_percentage(value);
-      },
-      min: 0,
-      max: 100,
-      step: 10
-    });
-
-    widget.attach(desaturate_percentage_label, 0, 9, 1, 1);
-    widget.attach(desaturate_percentage_scale, 0, 10, 2, 1);
-
-    return widget;
+    window.set_search_enabled(true);
+    add_appearance_page(window, settings);
+    add_exclusions_page(window, settings);
   }
 }

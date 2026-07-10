@@ -54,10 +54,7 @@ async function resolve_configuration_dir(
   }
 }
 
-function get_configuration_dir(
-  metadata: ExtensionMetadata,
-  cancellable: Gio.Cancellable
-): Promise<string | undefined> {
+function get_configuration_dir(metadata: ExtensionMetadata, cancellable: Gio.Cancellable): Promise<string | undefined> {
   let configuration_dir_promise = configuration_dir_promises.get(cancellable);
   if (!configuration_dir_promise) {
     configuration_dir_promise = resolve_configuration_dir(metadata, cancellable);
@@ -107,10 +104,7 @@ export async function load_config(
     }
     return parse_config(content, file_path);
   } catch (error) {
-    if (
-      is_io_error(error, Gio.IOErrorEnum.CANCELLED) ||
-      is_io_error(error, Gio.IOErrorEnum.NOT_FOUND)
-    ) {
+    if (is_io_error(error, Gio.IOErrorEnum.CANCELLED) || is_io_error(error, Gio.IOErrorEnum.NOT_FOUND)) {
       return undefined;
     }
 
