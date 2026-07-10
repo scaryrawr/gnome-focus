@@ -1,6 +1,8 @@
-import type { ExtensionMetadata } from '@girs/gnome-shell/extensions/extension';
+import type { Extension } from '@girs/gnome-shell/extensions/extension';
 import Gio from 'gi://Gio';
 import GLib from 'gi://GLib';
+
+type ExtensionMetadata = Extension['metadata'];
 
 let load_contents_promisified = false;
 
