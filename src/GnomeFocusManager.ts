@@ -55,7 +55,8 @@ export class GnomeFocusManager {
   constructor(
     readonly settings: FocusSettings,
     readonly special_focus: string[] | undefined,
-    readonly legacy_ignore_inactive: string[] | undefined
+    readonly legacy_ignore_inactive: string[] | undefined,
+    readonly pending_window_actors: ReadonlySet<Meta.WindowActor>
   ) {
     this.excluded_windows = settings.excluded_windows;
     settings.on('focus-opacity', this.update_focused_window_opacity);
@@ -397,7 +398,7 @@ export class GnomeFocusManager {
       }
     }
 
-    this.refresh();
+    this.refresh(this.pending_window_actors);
   };
 
   /** Reconciles ready window actors with Mutter's current focus state. */

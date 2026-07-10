@@ -61,8 +61,14 @@ export default class GnomeFocus extends Extension {
 
     const settings = get_settings(this.getSettings());
     settings.normalize_excluded_windows();
-    this.extension_instance = new GnomeFocusManager(settings, special_focus, ignore_focus);
-    this.pending_window_actors = new Set();
+    const pending_window_actors = new Set<Meta.WindowActor>();
+    this.pending_window_actors = pending_window_actors;
+    this.extension_instance = new GnomeFocusManager(
+      settings,
+      special_focus,
+      ignore_focus,
+      pending_window_actors
+    );
 
     signal_tracked(global.display).connectObject(
       'notify::focus-window',
