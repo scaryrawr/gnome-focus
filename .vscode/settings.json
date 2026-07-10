@@ -1,5 +1,5 @@
 {
-  "cSpell.words": ["girs", "prefs"],
+  "cSpell.words": ["girs", "Oxfmt", "Oxlint", "prefs", "Rolldown", "tsgo"],
   "files.exclude": {
     "**/.git": true,
     "**/.svn": true,

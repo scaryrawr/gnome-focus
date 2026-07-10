@@ -21,10 +21,7 @@ Windows that match the list criteria will have an opacity applied to them that c
 It uses the WM_CLASS (use `xprop` to help figure them out).
 
 ```json
-[
-    "Code",
-    "Code - Insiders"
-]
+["Code", "Code - Insiders"]
 ```
 
 ## Ignore List
@@ -36,9 +33,7 @@ Windows that match the list criteria will not have their opacity modified even w
 It uses the WM_CLASS (use `xprop` to help figure them out). The below example lets Firefox's Picture-in-Picture keep 100% opacity.
 
 ```json
-[
-    "Toolkit"
-]
+["Toolkit"]
 ```
 
 ## Installing
@@ -47,24 +42,38 @@ It uses the WM_CLASS (use `xprop` to help figure them out). The below example le
 
 ## Repo Guide
 
-Thanks to [gjsify](https://gjsify.org/pages/projects) the build process has gotten a lot easier (no need to manually generate types using gobject-introspection), and you can actually build non-Linux systems. I recommend only installing on Linux though.
+The build uses [GJS type definitions](https://gjsify.org/), Rolldown, Oxlint, native TypeScript, and Oxfmt.
+Building works on non-Linux systems, but local extension installation requires Linux and GNOME Shell.
+
+### Prerequisites
+
+Use Node.js 22 and the pnpm 11 version pinned in `package.json`.
+
+```bash
+corepack enable
+pnpm install --frozen-lockfile
+```
+
+### Quality checks
+
+```bash
+pnpm lint
+```
 
 ### Build
 
-Currently, building doesn't produce expected errors (need to figure out [esbuild](https://esbuild.github.io/)).
-
 ```bash
-yarn build
+pnpm build
 ```
 
 ### Packaging for [GNOME Extensions](https://extensions.gnome.org/)
 
 ```bash
-yarn build:package
+pnpm build:package
 ```
 
 ### Installing Locally
 
 ```bash
-yarn package:install
+pnpm package:install
 ```

@@ -10,19 +10,27 @@
 
 ## Build, Test, and Development Commands
 
-Use Node 22 and Yarn 1, matching CI.
+Use Node 22 and pnpm 11, matching CI. `package.json` pins the exact package-manager version; use pnpm for
+all dependency and script commands.
 
-- `yarn install` installs the locked dependencies.
-- `yarn lint` is the fastest validation command and checks all TypeScript.
-- `yarn build` runs lint, bundles both entrypoints with Rollup, and copies metadata and schemas into `dist/`.
-- `yarn build:package` performs a clean build and creates the uploadable extension ZIP; this is the pull-request CI check.
-- `yarn package:install` builds and replaces the local extension at `~/.local/share/gnome-shell/extensions/focus@scaryrawr.github.io`.
+- `pnpm install --frozen-lockfile` installs exactly the locked dependencies.
+- `pnpm lint` runs Oxlint, the pinned native `tsgo` type checker, and Oxfmt's formatting check.
+- `pnpm build` runs lint, bundles both entrypoints with Rolldown, and copies metadata and schemas into `dist/`.
+- `pnpm build:package` performs a clean build and creates the uploadable extension ZIP; this is the pull-request CI check.
+- `pnpm package:install` builds and replaces the local extension at `~/.local/share/gnome-shell/extensions/focus@scaryrawr.github.io`.
 
 There is no automated test suite. For runtime changes, lint and package first, then verify behavior in a compatible GNOME Shell session.
 
 ## Coding Style & Naming Conventions
 
-TypeScript is strict. Prettier uses single quotes, no trailing commas, and a 120-column width. ESLint requires `snake_case` for variables and functions, `UPPER_CASE` for constants, and `PascalCase` for classes. Source imports use `.js` extensions because Rollup emits ES modules for GJS.
+TypeScript is strict. Oxfmt uses single quotes, no trailing commas, a 120-column width, and LF endings. Keep
+variables and functions in `snake_case`, constants in `UPPER_CASE`, and classes in `PascalCase`. Oxlint does
+not yet implement the naming-convention rule, so reviewers must enforce these names.
+
+Oxlint enables the supported recommended TypeScript and import safeguards, including nursery
+`import/named` and `import/export`. Import resolver settings and `import/no-unresolved` cannot safely resolve
+GJS `gi://` and `resource://` specifiers, so they are not enforced; `tsgo` and Rolldown still validate local
+module imports. Source imports use `.js` extensions because Rolldown emits ES modules for GJS.
 
 Treat the entrypoints as separate processes: Shell code may import `Clutter`, `Meta`, `Shell`, and `St`, while preferences may import GTK4 and Adwaita. Never cross those library sets.
 
@@ -32,7 +40,7 @@ Only list GNOME Shell versions that were tested. Prefer stable GNOME platform AP
 
 ## Commit & Pull Request Guidelines
 
-Use concise, imperative, sentence-case commit subjects. PRs should explain user-visible GNOME behavior, note supported shell-version changes, and pass `yarn build:package`. Tags matching `v*` publish the generated ZIP through GitHub Actions.
+Use concise, imperative, sentence-case commit subjects. PRs should explain user-visible GNOME behavior, note supported shell-version changes, and pass `pnpm build:package`. Tags matching `v*` publish the generated ZIP through GitHub Actions.
 
 ## Agent Skills
 

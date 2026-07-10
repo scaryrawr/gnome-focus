@@ -43,8 +43,8 @@ Build a resource ledger for every changed GObject, signal, GLib source, window e
 Run:
 
 ```sh
-yarn lint
-yarn build:package
+pnpm lint
+pnpm build:package
 unzip -l focus@scaryrawr.github.io.zip
 ```
 
@@ -55,7 +55,7 @@ Confirm the archive contains only runtime files, readable non-minified JavaScrip
 When a compatible GNOME session is available:
 
 ```sh
-yarn package:install
+pnpm package:install
 gnome-extensions prefs focus@scaryrawr.github.io
 journalctl -f -o cat /usr/bin/gnome-shell
 journalctl -f -o cat /usr/bin/gjs
