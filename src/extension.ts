@@ -50,8 +50,8 @@ export default class GnomeFocus extends Extension {
     this.config_cancellable = cancellable;
 
     const [special_focus, ignore_focus] = await Promise.all([
-      load_config<string[]>(this.metadata, 'special_focus.json', cancellable),
-      load_config<string[]>(this.metadata, 'ignore_focus.json', cancellable)
+      load_config(this.metadata, 'special_focus.json', cancellable),
+      load_config(this.metadata, 'ignore_focus.json', cancellable)
     ]);
 
     if (this.config_cancellable !== cancellable || cancellable.is_cancelled()) {

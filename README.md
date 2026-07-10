@@ -8,9 +8,13 @@ A quick GNOME extension for apply transparency to inactive windows.
 
 Can be found in Gnome Tweaks -> Extensions -> Focus.
 
+Optional JSON configuration files are read from `~/.config/focus@scaryrawr.github.io/`. When that directory is
+not present, Focus falls back to its legacy `~/.config/Focus/` location. Each file must contain a JSON array of
+strings; invalid files are ignored with a warning in the GNOME Shell log.
+
 ### Special Focus List
 
-A special focus list can be created at `~/.config/Focus/special_focus.json`.
+A special focus list can be created at `~/.config/focus@scaryrawr.github.io/special_focus.json`.
 
 Windows that match the list criteria will have an opacity applied to them that can be adjusted in the Extension Preference Window.
 
@@ -25,7 +29,7 @@ It uses the WM_CLASS (use `xprop` to help figure them out).
 
 ## Ignore List
 
-An ignore list can be created at `~/.config/Focus/ignore_focus.json`.
+An ignore list can be created at `~/.config/focus@scaryrawr.github.io/ignore_focus.json`.
 
 Windows that match the list criteria will not have their opacity modified even when inactive.
 
