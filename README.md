@@ -9,6 +9,12 @@ A quick GNOME extension for apply transparency to inactive windows.
 Open Focus from the GNOME Extensions app to configure opacity, inactive-window effects, special focus windows,
 and exclusions.
 
+## Stacked Window Navigation
+
+Hold <kbd>Ctrl</kbd> + <kbd>Super</kbd> and scroll the mouse wheel over overlapping normal windows to cycle focus
+through the windows under the pointer. Scrolling down selects the next window behind the focused one; scrolling up
+cycles in reverse.
+
 ### Special Focus Windows
 
 Use the **Special Focus Windows** preferences page to add or remove windows that should use the special focused
